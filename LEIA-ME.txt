@@ -71,3 +71,6 @@ NOVIDADES DESTA VERSÃO
 - Cada faixa pode ter seu intérprete (trilhas de novela e coletâneas): "Título — Intérprete".
 - Configurações em Mais > Identificação automática. As chaves ficam só no aparelho e NÃO entram no backup.
 - Itens cadastrados na versão anterior continuam: a foto antiga vira a "Frente".
+- "Perguntar à IA pelo nome": a IA pesquisa na web e traz a lista de faixas sem precisar de foto (mesma chave).
+- O app descobre sozinho qual modelo do Gemini a sua chave pode usar e lembra dele. Se der erro de modelo:
+  Mais > Identificação automática > Avançado > "Ver modelos disponíveis" e digite um deles em "Outro modelo".
