@@ -143,6 +143,11 @@ input[type=range]{width:100%;accent-color:var(--gold);min-height:34px}
 .set .t1{font-weight:500;line-height:1.3}
 .set .t2{font-size:13px;color:var(--muted)}
 .set .loc{font-size:12px;color:var(--gold-deep)}
+.set li.dhead{padding:18px 0 8px;border-bottom:1px solid var(--gold-deep)}
+.set li.dhead .th{width:44px;flex:none}
+.set li.dhead .th .frame{--c:6px}
+.set li.dhead svg{color:var(--fc)}
+.set li.dhead .t1{font-family:var(--disp);font-weight:400;font-size:16px}
 .pull{display:flex;gap:8px;overflow-x:auto;padding:6px 0 4px;scrollbar-width:none}
 .pull .mini{flex:none;width:64px}
 .pull .mini .frame{--c:7px}
@@ -256,6 +261,7 @@ nav.tabs .add b{font-weight:500;position:absolute;bottom:8px;left:0;right:0;text
 .ta{display:block;color:var(--muted);font-size:13px}
 .crop{z-index:78;background:#0b0907;display:grid;grid-template-rows:auto minmax(0,1fr) auto;padding-top:env(safe-area-inset-top)}
 .crop-top{padding:12px 16px 4px;text-align:center;color:var(--paper);font-size:14px}
+.cropmsg{display:block;color:var(--gold-hi);font-size:13px;margin-top:4px;min-height:18px}
 .crop-stage{display:grid;place-items:center;overflow:hidden;padding:8px}
 .crop-stage canvas{touch-action:none;display:block}
 .crop-bar{padding:12px 14px calc(14px + env(safe-area-inset-bottom));display:grid;gap:12px;background:var(--bg2);box-shadow:0 -1px 0 var(--gold-deep)}
@@ -296,13 +302,15 @@ nav.tabs .add b{font-weight:500;position:absolute;bottom:8px;left:0;right:0;text
 <div class="sheet" id="sheet" hidden role="dialog" aria-modal="true"><div class="panel" id="panel"></div></div>
 <div class="sheet dlg" id="dlg" hidden></div>
 <div class="sheet crop" id="crop" hidden role="dialog" aria-modal="true" aria-label="Recortar foto">
-  <div class="crop-top">Arraste os cantos para deixar só o disco, CD ou fita</div>
+  <div class="crop-top">Arraste os cantos para deixar só o disco, CD ou fita<span class="cropmsg" id="cropmsg"></span></div>
   <div class="crop-stage" id="cropstage"><canvas id="cropcv"></canvas></div>
   <div class="crop-bar">
     <div class="chips">
       <button type="button" class="chip" data-a="crot">Girar</button>
       <button type="button" class="chip" data-a="cmode" data-v="livre" aria-pressed="true">Livre</button>
       <button type="button" class="chip" data-a="cmode" data-v="quadrado" aria-pressed="false">Quadrado</button>
+      <button type="button" class="chip" data-a="cauto">Auto</button>
+      <button type="button" class="chip" data-a="caiai" id="caiai" hidden>Recortar com IA</button>
       <button type="button" class="chip" data-a="cfull">Foto inteira</button>
     </div>
     <div class="acts"><button type="button" class="btn" data-a="cok">Usar esta foto</button><button type="button" class="btn ghost" data-a="ccancel">Cancelar</button></div>
@@ -338,7 +346,7 @@ const FORMATS = {
   fita:  {name:'Fita',  plural:'fitas', color:'#d0794b'}
 };
 const CONDS = [['M','Perfeito / lacrado'],['NM','Quase perfeito'],['VG+','Muito bom +'],['VG','Muito bom'],['G','Bom'],['P','Regular / ruim']];
-const BASE_GENRES = ['MPB','Samba','Bossa Nova','Rock','Pop','Jazz','Blues','Soul','Funk','Disco','Reggae','Forró','Hip hop','Eletrônica','Clássica','Country','Folk','Metal','Punk','Gospel'];
+const BASE_GENRES = ['MPB','Samba','Bossa Nova','Rock','Pop','Jazz','Blues','Soul','Funk','Disco','Reggae','Forró','Sertanejo','Axé','Brega','Hip hop','Eletrônica','Clássica','Country','Folk','Metal','Punk','Gospel','Trilha sonora','Latina','Infantil'];
 
 // ---------- ícones ----------
 const P = {
@@ -411,7 +419,7 @@ const state = {
   view: 'caixa',
   fFormat: 'todos', sort: 'recentes',
   q: '', sFormat: 'todos', sGenre: null,
-  sl: {genres: [], format: 'todos', count: 12, perAlbum: 2},
+  sl: {genres: [], format: 'todos', count: 12, perAlbum: 5, group: true},
   result: null, resultName: ''
 };
 let draft = null;       // item em edição
@@ -497,7 +505,7 @@ function toast(msg) {
 }
 const allGenres = () => {
   const cnt = {};
-  state.items.forEach(i => i.genres.forEach(g => cnt[g] = (cnt[g] || 0) + i.tracks.length));
+  state.items.forEach(i => i.tracks.forEach(t => trackGenres(i, t).forEach(g => cnt[g] = (cnt[g] || 0) + 1)));
   return Object.entries(cnt).sort((a, b) => b[1] - a[1]);
 };
 
@@ -648,7 +656,7 @@ function renderResults() {
 // ---------- setlist ----------
 function viewSetlist() {
   const gs = allGenres(), s = state.sl;
-  let h = `<section class="pg"><h1>Setlist</h1><p class="sub">Escolha os gêneros e o Garimpo Sound sorteia músicas da sua coleção, dizendo de qual disco tirar cada uma.</p>`;
+  let h = `<section class="pg"><h1>Setlist</h1><p class="sub">Escolha os gêneros e o Garimpo Sound monta a sequência pensando na troca de discos: as músicas de um mesmo disco ficam juntas, e vinis, CDs e fitas ficam em blocos.</p>`;
   if (!state.items.length) return h + emptyHTML() + '</section>';
   h += `<div class="panel-box">
     <div><span class="lbl">Gêneros ${gs.length ? '(sem escolher, vale a coleção toda)' : ''}</span>
@@ -656,8 +664,9 @@ function viewSetlist() {
         : `<p class="note">Marque os gêneros nos seus achados para montar setlists por estilo. Por enquanto, o sorteio usa a coleção toda.</p>`}</div>
     <div><span class="lbl">Formato</span><div class="chips">${chipRow(s.format, 'slformat')}</div></div>
     <div><span class="lbl">Quantidade: <span class="cnt" id="cnt">${s.count}</span> músicas</span><input type="range" id="slcount" min="3" max="40" value="${s.count}" aria-label="Quantidade de músicas"></div>
-    <div><label class="lbl" for="slper">Máximo de músicas por álbum</label>
-      <select class="sel" id="slper">${[[1,'1'],[2,'2'],[3,'3'],[0,'Sem limite']].map(([v, n]) => `<option value="${v}" ${s.perAlbum === v ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
+    <div><label class="lbl" for="slper">Músicas seguidas de um mesmo disco (máximo)</label>
+      <select class="sel" id="slper">${[[3,'3 músicas'],[5,'5 músicas'],[8,'8 músicas'],[0,'Sem limite']].map(([v, n]) => `<option value="${v}" ${s.perAlbum === v ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
+    <label class="chk"><input type="checkbox" id="slgroup" ${s.group ? 'checked' : ''}><span>Agrupar por formato: vinis, CDs e fitas em blocos</span></label>
     <button class="btn" data-a="gen">${ic('dado', 20)}Montar setlist</button></div>
     <div id="setresult">${setResultHTML()}</div>`;
   if (state.setlists.length) {
@@ -668,20 +677,31 @@ function viewSetlist() {
   }
   return h + '</section>';
 }
+// agrupa músicas consecutivas do mesmo disco
+function setGroups(r) {
+  const g = [];
+  r.forEach((e, i) => { const last = g[g.length - 1]; if (last && last.itemId === e.itemId) last.rows.push({e, i}); else g.push({itemId: e.itemId, e, rows: [{e, i}]}); });
+  return g;
+}
 function setResultHTML() {
   const r = state.result; if (!r) return '';
   if (!r.length) return `<p class="note">Não achei músicas com esses filtros. Escolha outros gêneros ou complete as faixas dos seus achados.</p>`;
+  const groups = setGroups(r), swaps = groups.length - 1, flips = groups.reduce((n, g) => n + countFlips(g.rows.map(x => x.e)), 0);
   const items = [...new Map(r.map(e => [e.itemId, state.items.find(i => i.id === e.itemId)]).filter(([, v]) => v)).values()];
   const want = state.sl.count;
   return `<h2>${esc(state.resultName || 'Sua setlist')}</h2>
+    <p class="note">${r.length} ${r.length === 1 ? 'música' : 'músicas'} em ${groups.length} ${groups.length === 1 ? 'disco' : 'discos'}${swaps ? `: ${swaps} ${swaps === 1 ? 'troca' : 'trocas'} de disco` : ''}${flips ? `, ${flips} ${flips === 1 ? 'virada' : 'viradas'} de lado` : ''}.</p>
     ${r.length < want && !state.resultName ? `<p class="note">Encontrei só ${r.length} ${r.length === 1 ? 'música' : 'músicas'} com esses filtros. Registre mais faixas ou amplie os gêneros para completar.</p>` : ''}
-    <ol class="set">${r.map((e, i) => `<li style="--fc:${FORMATS[e.format]?.color || '#d4af61'}">
-      <span class="n">${i + 1}</span>
-      <div class="tx"><span class="t1">${esc(e.t)}</span><span class="t2">${esc(e.artist)}, ${esc(e.album)}</span>
-        <span class="loc">${esc(FORMATS[e.format]?.name || '')}, ${esc(e.pos)}${e.loc ? ', ' + esc(e.loc) : ''}</span></div>
-      <button class="icon sm" data-a="swap" data-i="${i}" aria-label="Trocar música ${i + 1}">${ic('troca', 20)}</button>
-      <button class="icon sm" data-a="rmtrack" data-i="${i}" aria-label="Remover música ${i + 1}">${ic('fechar', 20)}</button></li>`).join('')}</ol>
-    ${items.length ? `<h2>Separe da caixa</h2><div class="pull">${items.map(it => `<button class="mini" data-a="open" data-id="${esc(it.id)}" style="--fc:${FORMATS[it.format].color}"><div class="frame">${cover(it)}</div><span>${esc(it.album)}</span></button>`).join('')}</div>` : ''}
+    <ul class="set">${groups.map(gr => {
+      const e = gr.e, it = state.items.find(i => i.id === gr.itemId), fc = FORMATS[e.format]?.color || '#d4af61';
+      return `<li class="dhead" style="--fc:${fc}">${it ? `<div class="th"><div class="frame">${cover(it)}</div></div>` : ''}
+        <div class="tx"><span class="t1">${esc(e.album)}</span><span class="t2">${esc(e.iartist || '')}</span><span class="loc">${esc(FORMATS[e.format]?.name || '')}${e.loc ? ', ' + esc(e.loc) : ''}</span></div>${ic(e.format, 20)}</li>` +
+        gr.rows.map(({e, i}) => `<li style="--fc:${fc}"><span class="n">${i + 1}</span>
+          <div class="tx"><span class="t1">${esc(e.t)}</span><span class="t2">${esc(e.artist)}</span><span class="loc">${esc(e.pos)}</span></div>
+          <button class="icon sm" data-a="swap" data-i="${i}" aria-label="Trocar música ${i + 1}">${ic('troca', 20)}</button>
+          <button class="icon sm" data-a="rmtrack" data-i="${i}" aria-label="Remover música ${i + 1}">${ic('fechar', 20)}</button></li>`).join('');
+    }).join('')}</ul>
+    ${items.length ? `<h2>Separe da caixa, na ordem de uso</h2><div class="pull">${items.map(it => `<button class="mini" data-a="open" data-id="${esc(it.id)}" style="--fc:${FORMATS[it.format].color}"><div class="frame">${cover(it)}</div><span>${esc(it.album)}</span></button>`).join('')}</div>` : ''}
     <div class="acts"><button class="btn ghost" data-a="copyset">${ic('copiar', 18)}Copiar</button>
       ${navigator.share ? `<button class="btn ghost" data-a="shareset">${ic('enviar', 18)}Compartilhar</button>` : ''}
       <button class="btn ghost" data-a="saveset">${ic('salvar', 18)}Salvar</button></div>`;
@@ -690,33 +710,48 @@ function buildPool() {
   const s = state.sl, pool = [];
   state.items.forEach(it => {
     if (s.format !== 'todos' && it.format !== s.format) return;
-    if (s.genres.length && !it.genres.some(g => s.genres.includes(g))) return;
-    it.tracks.forEach((tr, idx) => pool.push(entryOf(it, idx)));
+    it.tracks.forEach((tr, idx) => { if (!s.genres.length || trackGenres(it, tr).some(g => s.genres.includes(g))) pool.push(entryOf(it, idx)); });
   });
   return pool;
 }
-const entryOf = (it, idx) => ({key: it.id + ':' + idx, itemId: it.id, t: it.tracks[idx].t, pos: it.tracks[idx].pos, artist: it.tracks[idx].a || it.artist, album: it.album, format: it.format, loc: it.location || ''});
-function spreadArtists(list) {
-  const rest = list.slice(), out = [];
-  while (rest.length) {
-    const last = out.length ? out[out.length - 1].artist : null;
-    let k = rest.findIndex(e => e.artist !== last); if (k < 0) k = 0;
-    out.push(rest.splice(k, 1)[0]);
-  }
-  return out;
-}
+const entryOf = (it, idx) => ({key: it.id + ':' + idx, idx, itemId: it.id, t: it.tracks[idx].t, pos: it.tracks[idx].pos, artist: it.tracks[idx].a || it.artist, iartist: it.artist, album: it.album, format: it.format, loc: it.location || ''});
+const sideOf = e => /^[A-Da-d]/.test(e.pos || '') ? e.pos[0].toUpperCase() : '';
+const countFlips = arr => arr.reduce((n, e, i) => n + (i && sideOf(e) !== sideOf(arr[i - 1]) ? 1 : 0), 0);   // virar o lado do vinil ou da fita
+// monta a setlist trocando o mínimo de discos: escolhe poucos discos, toca sequências deles e agrupa por formato
 function genSetlist() {
-  const s = state.sl, pool = shuffle(buildPool()), out = [], per = {};
-  for (const e of pool) {
-    if (out.length >= s.count) break;
-    if (s.perAlbum && (per[e.itemId] || 0) >= s.perAlbum) continue;
-    out.push(e); per[e.itemId] = (per[e.itemId] || 0) + 1;
+  const s = state.sl, pool = buildPool(), N = s.count, cap = s.perAlbum || Infinity;
+  const byItem = new Map();
+  pool.forEach(e => { if (!byItem.has(e.itemId)) byItem.set(e.itemId, []); byItem.get(e.itemId).push(e); });
+  byItem.forEach(a => a.sort((x, y) => x.idx - y.idx));
+  const discs = [...byItem.entries()].map(([id, arr]) => ({id, arr, fmt: arr[0].format, w: Math.min(arr.length, cap) * (0.5 + Math.random()), taken: []})).sort((a, b) => b.w - a.w);
+  const chosen = []; let left = N;
+  for (const d of discs) {
+    if (left <= 0) break;
+    const take = Math.min(cap, left, d.arr.length), starts = Array.from({length: d.arr.length - take + 1}, (_, k) => k);
+    const fl = starts.map(k => countFlips(d.arr.slice(k, k + take))), mn = Math.min(...fl), best = starts.filter((k, i) => fl[i] === mn);   // prefere a sequência que não vira de lado
+    const start = best[Math.floor(Math.random() * best.length)];
+    d.taken = d.arr.slice(start, start + take); chosen.push(d); left -= take;
   }
-  state.result = spreadArtists(out); state.resultName = '';
+  if (left > 0) for (const d of chosen) {   // o limite por disco deixou faltar músicas: estende as sequências dos discos já escolhidos
+    if (left <= 0) break;
+    const add = d.arr.filter(e => !d.taken.includes(e)).slice(0, left);
+    d.taken = [...d.taken, ...add].sort((x, y) => x.idx - y.idx); left -= add.length;
+  }
+  if (s.group) {
+    const tot = {}; chosen.forEach(d => { tot[d.fmt] = (tot[d.fmt] || 0) + d.taken.length; });
+    chosen.sort((a, b) => (tot[b.fmt] - tot[a.fmt]) || (a.fmt === b.fmt ? 0 : a.fmt < b.fmt ? -1 : 1));
+  }
+  state.result = chosen.flatMap(d => d.taken); state.resultName = '';
 }
 const setAsText = () => {
-  const s = state.sl, g = state.resultName || ('Setlist' + (s.genres.length ? ' de ' + s.genres.join(', ') : ''));
-  return `${g}\n\n` + state.result.map((e, i) => `${i + 1}. ${e.t} — ${e.artist} (${e.album}, ${FORMATS[e.format]?.name || ''} ${e.pos}${e.loc ? ', ' + e.loc : ''})`).join('\n');
+  const s = state.sl, out = [state.resultName || ('Setlist' + (s.genres.length ? ' de ' + s.genres.join(', ') : '')), '']; let n = 0;
+  setGroups(state.result).forEach((g, k) => {
+    const e = g.e;
+    out.push(`Disco ${k + 1}: ${e.album}${e.iartist ? ' (' + e.iartist + ')' : ''}, ${FORMATS[e.format]?.name || ''}${e.loc ? ', ' + e.loc : ''}`);
+    g.rows.forEach(({e}) => out.push(`${++n}. ${e.t}${e.artist ? ' — ' + e.artist : ''} (${e.pos})`));
+    out.push('');
+  });
+  return out.join('\n').trim();
 };
 
 // ---------- detalhe ----------
@@ -730,7 +765,7 @@ function openDetail(id, hlIdx) {
   it.tracks.forEach((tr, i) => {
     const side = /^[A-D]/.test(tr.pos) ? tr.pos[0] : '';
     if (side && side !== lastSide) { trk += `<li class="side">Lado ${side}</li>`; lastSide = side; }
-    trk += `<li ${hlIdx === i ? 'class="hl" id="hlrow"' : ''}><span class="pos">${esc(tr.pos)}</span><span>${esc(tr.t)}${tr.a ? `<small class="ta">${esc(tr.a)}</small>` : ''}</span></li>`;
+    trk += `<li ${hlIdx === i ? 'class="hl" id="hlrow"' : ''}><span class="pos">${esc(tr.pos)}</span><span>${esc(tr.t)}${(tr.a || tr.g) ? `<small class="ta">${esc([tr.a, tr.g].filter(Boolean).join(' · '))}</small>` : ''}</span></li>`;
   });
   openSheet(`
     <div class="shtop"><button class="icon" data-a="close" aria-label="Voltar">${ic('voltar')}</button><h2>${f.name}</h2><span></span></div>
@@ -779,7 +814,7 @@ function photoAreaHTML() {
   return h + `<p class="hint" style="margin-top:8px">Fotografe a frente e o verso: o verso ajuda a identificar o disco e traz o código de barras. Depois da foto, você ajusta o recorte. As fotos ficam só neste aparelho.</p>`;
 }
 function openForm(it) {
-  draft = it ? {...it, genres: [...it.genres], photos: [...(it.photos || [])], slots: Math.max(2, (it.photos || []).length)} : {format: 'vinil', genres: [], photos: [], tracks: [], slots: 2};
+  draft = it ? {...it, genres: [...it.genres], photos: [...(it.photos || [])], slots: Math.max(2, (it.photos || []).length), formatTouched: true, tg: Object.fromEntries((it.tracks || []).filter(t => t.g).map(t => [norm(t.t), t.g]))} : {format: 'vinil', genres: [], photos: [], tracks: [], slots: 2, formatTouched: false, tg: {}};
   const d = draft;
   openSheet(`
     <div class="shtop"><button class="icon" data-a="close" aria-label="Fechar">${ic('fechar')}</button><h2>${d.id ? 'Editar achado' : 'Registrar achado'}</h2><span></span></div>
@@ -836,7 +871,7 @@ async function saveForm(form) {
     genres: d.genres, condition: fd.get('condition') || '',
     value: v !== '' && !isNaN(parseFloat(v)) ? parseFloat(v) : null,
     location: (fd.get('location') || '').trim(), notes: (fd.get('notes') || '').trim(),
-    tracks: parseTracks(fd.get('tracks')), photos, photo: photos.find(Boolean) || null, example: !!d.example
+    tracks: parseTracks(fd.get('tracks')).map(t => { const g = d.tg && d.tg[norm(t.t)]; return g ? {...t, g} : t; }), photos, photo: photos.find(Boolean) || null, example: !!d.example
   };
   try { await DB.put('items', it); } catch (e) { toast('Não consegui guardar no aparelho. Confira o espaço livre e tente de novo.'); return; }
   const k = state.items.findIndex(x => x.id === it.id);
@@ -860,6 +895,7 @@ function openMenu() {
       <div class="menu-list">
         ${deferredInstall && !standalone ? `<button class="btn" data-a="install">${ic('baixar', 18)}Instalar o app</button>` : ''}
         <button class="btn ghost" data-a="aiset">${ic('busca', 18)}Identificação automática</button>
+        ${state.items.some(i => !i.genres.length) ? `<button class="btn ghost" data-a="fillgen">Completar gêneros com IA (${state.items.filter(i => !i.genres.length).length} sem gênero)</button>` : ''}
         <button class="btn ghost" data-a="export">${ic('enviar', 18)}Exportar cópia de segurança</button>
         <button class="btn ghost" data-a="import">${ic('baixar', 18)}Importar cópia de segurança</button>
         ${hasEx ? `<button class="btn ghost" data-a="rmexamples">Remover itens de exemplo</button>` : (!n ? `<button class="btn ghost" data-a="examples">Carregar itens de exemplo</button>` : '')}
@@ -886,7 +922,7 @@ function cleanItem(r) {
   if (!r || typeof r !== 'object') return null;
   const artist = str(r.artist, 150).trim(), album = str(r.album, 150).trim();
   if (!artist || !album) return null;
-  const tracks = (Array.isArray(r.tracks) ? r.tracks : []).slice(0, 300).map(t => { const o = {pos: str(t && t.pos, 6) || '?', t: str(t && t.t, 200).trim()}; const a = str(t && t.a, 150).trim(); if (a) o.a = a; return o; }).filter(t => t.t);
+  const tracks = (Array.isArray(r.tracks) ? r.tracks : []).slice(0, 300).map(t => { const o = {pos: str(t && t.pos, 6) || '?', t: str(t && t.t, 200).trim()}; const a = str(t && t.a, 150).trim(); if (a) o.a = a; const gg = str(t && t.g, 30).trim(); if (gg) o.g = gg; return o; }).filter(t => t.t);
   let photos = Array.isArray(r.photos) ? r.photos.slice(0, 4).map(dataURLToBlob) : [];
   if (!photos.some(Boolean) && r.photo) photos = [dataURLToBlob(r.photo)];
   while (photos.length && !photos[photos.length - 1]) photos.pop();
@@ -969,20 +1005,24 @@ function mbFormat(media) {
   if (/cd/i.test(f)) return 'cd';
   return null;
 }
-const GMAP = [[/bossa/i,'Bossa Nova'],[/samba|pagode/i,'Samba'],[/\bmpb\b|brazilian popular/i,'MPB'],[/forr[oó]/i,'Forró'],[/hip.?hop|\brap\b/i,'Hip hop'],
-  [/electro|house|techno|ambient|trance/i,'Eletrônica'],[/classical|opera|baroque/i,'Clássica'],[/metal/i,'Metal'],[/punk/i,'Punk'],[/rock/i,'Rock'],
+const GMAP = [[/bossa/i,'Bossa Nova'],[/samba|pagode|partido alto/i,'Samba'],[/\bmpb\b|brazilian popular|m[uú]sica popular brasileira/i,'MPB'],[/forr[oó]|bai[ãa]o|xote/i,'Forró'],
+  [/sertanej|caipira|mod[ãa]o/i,'Sertanejo'],[/(^|[^a-z])ax[eé]($|[^a-z])/i,'Axé'],[/brega|tecnobrega/i,'Brega'],[/hip.?hop|\brap\b/i,'Hip hop'],
+  [/eletr[oô]nic|electro|house|techno|ambient|trance/i,'Eletrônica'],[/classical|cl[aá]ssica|[oó]pera|baroque|erudit/i,'Clássica'],[/metal/i,'Metal'],[/punk/i,'Punk'],[/rock/i,'Rock'],
   [/jazz|bebop/i,'Jazz'],[/blues/i,'Blues'],[/soul|r&b|rhythm and blues/i,'Soul'],[/funk/i,'Funk'],[/disco/i,'Disco'],[/reggae|\bska\b/i,'Reggae'],
-  [/country/i,'Country'],[/folk/i,'Folk'],[/gospel/i,'Gospel'],[/soundtrack|stage & screen|\bscore\b/i,'Trilha sonora'],[/pop/i,'Pop']];
+  [/country/i,'Country'],[/folk/i,'Folk'],[/gospel|religios|louvor/i,'Gospel'],[/trilha|soundtrack|stage & screen|\bscore\b/i,'Trilha sonora'],[/latin/i,'Latina'],[/infantil|children/i,'Infantil'],[/pop/i,'Pop']];
+// nome de gênero padronizado: mesmo que a fonte diga "rock and roll" ou "Hard Rock", vira "Rock" e entra nas setlists
+function canonGenre(g) {
+  g = String(g || '').trim().slice(0, 30); if (!g) return '';
+  const n = norm(g), hit = BASE_GENRES.find(x => norm(x) === n); if (hit) return hit;
+  const m = GMAP.find(([re]) => re.test(g)); if (m) return m[1];
+  return g.charAt(0).toUpperCase() + g.slice(1);
+}
 function mapGenres(names) {
   const out = [];
-  for (const n of names) {
-    const hit = GMAP.find(([re]) => re.test(n));
-    const g = hit ? hit[1] : n.charAt(0).toUpperCase() + n.slice(1);
-    if (!out.includes(g)) out.push(g);
-    if (out.length >= 4) break;
-  }
+  for (const n of names) { const g = canonGenre(n); if (g && !out.includes(g)) out.push(g); if (out.length >= 4) break; }
   return out;
 }
+const trackGenres = (it, tr) => tr.g ? [tr.g] : it.genres;
 const cleanName = n => {
   n = String(n || '').replace(/\s*\(\d+\)\s*$/, '').trim();
   return /^various( artists)?$/i.test(n) || norm(n) === 'varios artistas' ? 'Vários artistas' : n;
@@ -1118,7 +1158,7 @@ async function fetchCover(id) {
   } catch (e) { return null; } finally { clearTimeout(t); }
 }
 function addGenre(g) {
-  g = String(g || '').trim().slice(0, 30); if (!g) return;
+  g = canonGenre(g); if (!g) return;
   const ex = [...document.querySelectorAll('#gbox [data-v]')].find(b => norm(b.dataset.v) === norm(g));
   if (ex) { if (ex.getAttribute('aria-pressed') !== 'true') ex.click(); }
   else {
@@ -1133,7 +1173,8 @@ async function applyMeta(m, opts = {}) {
   set('#f-artist', m.artist); set('#f-album', m.album);
   if (/^\d{4}$/.test(String(m.year || ''))) set('#f-year', m.year);
   if (m.format) { draft.format = m.format; document.querySelectorAll('#seg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === m.format)); }
-  (m.genres || []).forEach(addGenre);
+  (m.genres || []).map(canonGenre).forEach(addGenre);
+  (m.tracks || []).forEach(t => { if (t.g) draft.tg[norm(t.t)] = canonGenre(t.g); });
   if ((m.tracks || []).length) {
     const ta = $('#f-tracks');
     if (!ta.value.trim() || await dialog({msg: 'Substituir as faixas digitadas pela lista encontrada?', ok: 'Substituir'})) ta.value = tracksToText(m.tracks);
@@ -1143,6 +1184,7 @@ async function applyMeta(m, opts = {}) {
   let capa = false;
   if (opts.coverId && !draft.photos[0]) { const b = await fetchCover(opts.coverId); if (b && draft) { draft.photos[0] = b; $('#photoArea').innerHTML = photoAreaHTML(); capa = true; } }
   toast(opts.toast || (capa ? 'Achei! Dados e capa preenchidos' : 'Achei! Dados preenchidos'));
+  { const cf = aiCfg(); if (!draft.genres.length && cf.key && cf.agen) suggestGenresForForm(); }
 }
 async function pickResult(i) {
   const r = mbList[i]; if (!r) return;
@@ -1164,7 +1206,7 @@ function aiCfg() {
   let prov = LS.get('gs-prov'); if (prov !== 'gemini' && prov !== 'claude') prov = (gk || !ak) ? 'gemini' : 'claude';
   if (prov === 'gemini' && !gk && ak) prov = 'claude'; else if (prov === 'claude' && !ak && gk) prov = 'gemini';   // usa a que tiver chave
   return {prov, akey: ak, gkey: gk, key: prov === 'gemini' ? gk : ak, model: LS.get('gs-model') === 'pro' ? 'pro' : 'eco', gmodel: LS.get('gs-gmodel') === 'lite' ? 'lite' : 'flash',
-    gid: (LS.get('gs-gid') || '').trim(), web: LS.get('gs-web') !== '0', dg: LS.get('gs-discogs') || ''};
+    gid: (LS.get('gs-gid') || '').trim(), web: LS.get('gs-web') !== '0', dg: LS.get('gs-discogs') || '', acrop: LS.get('gs-acrop') === '1', agen: LS.get('gs-agen') !== '0'};
 }
 const aiModelId = (c, mk) => c.prov === 'gemini' ? (c.gid && !mk ? c.gid : GM_MODELS[mk || c.gmodel]) : AI_MODELS[mk || c.model];
 const aiNextModel = r => r && !r.custom ? (r.prov === 'claude' && r.mk === 'eco' ? 'pro' : r.prov === 'gemini' && r.mk === 'lite' ? 'flash' : null) : null;
@@ -1182,8 +1224,8 @@ Regras importantes:
 7. Se não conseguir identificar o item, devolva campos vazios e "confidence": "baixa".
 
 Responda SOMENTE com um objeto JSON válido, sem markdown e sem texto antes ou depois, neste formato:
-{"artist":"","album":"","year":null,"format":null,"label":"","genres":[],"tracks":[{"pos":"A1","title":"","artist":""}],"tracks_source":"impressa|web|nenhuma","confidence":"alta|media|baixa","notes":""}
-"genres" aceita até 4 gêneros em português.`;
+{"artist":"","album":"","year":null,"format":null,"label":"","genres":[],"tracks":[{"pos":"A1","title":"","artist":"","genre":""}],"tracks_source":"impressa|web|nenhuma","confidence":"alta|media|baixa","notes":""}
+"genres" aceita até 4 gêneros em português; prefira estes nomes: ${BASE_GENRES.join(", ")}. Só preencha "genre" numa faixa quando o gênero dela for diferente do predominante do disco (coletâneas e trilhas de novela com estilos variados).`;
 function aiError(status, msg) {
   const e = new Error(msg || 'erro'); e.status = status; e.prov = 'claude';
   if (status === 401) e.code = 'auth'; else if (status === 403) e.code = 'perm'; else if (status === 429) e.code = 'rate';
@@ -1229,13 +1271,13 @@ function gError(status, msg) {
   else e.code = 'other';
   return e;
 }
-async function callGemini({key, model, system, parts, web, maxTokens = 8192}) {
+async function callGemini({key, model, system, parts, web, maxTokens = 8192, json = false}) {
   const headers = {'x-goog-api-key': key, 'content-type': 'application/json'};
   let useWeb = !!web;
   for (;;) {
     const body = {contents: [{role: 'user', parts}], generationConfig: {maxOutputTokens: maxTokens, temperature: 0.2}};
     if (system) body.system_instruction = {parts: [{text: system}]};
-    if (useWeb) body.tools = [{google_search: {}}];
+    if (useWeb) body.tools = [{google_search: {}}]; else if (json) body.generationConfig.responseMimeType = 'application/json';
     const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 90000);
     let r; try { r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {method: 'POST', headers, body: JSON.stringify(body), signal: ctl.signal, credentials: 'omit', referrerPolicy: 'no-referrer'}); } finally { clearTimeout(t); }
     if (!r.ok) {
@@ -1284,11 +1326,11 @@ function parseAIJson(text) {
 function cleanAI(o) {
   const y = parseInt(o.year), tracks = (Array.isArray(o.tracks) ? o.tracks : []).slice(0, 300).map((t, i) => {
     const pp = str(t && t.pos, 6).trim(), r = {pos: /^[A-Da-d]\d{1,2}$/.test(pp) ? pp.toUpperCase() : String(i + 1), t: str(t && (t.title || t.t), 200).trim()};
-    const a = cleanName(str(t && (t.artist || t.a), 150).trim()); if (a) r.a = a; return r;
+    const a = cleanName(str(t && (t.artist || t.a), 150).trim()); if (a) r.a = a; const gg = canonGenre(str(t && (t.genre || t.g), 30)); if (gg) r.g = gg; return r;
   }).filter(t => t.t);
   const src = o.tracks_source === 'impressa' ? 'impressa' : o.tracks_source === 'web' ? 'web' : 'memoria';
   return {artist: cleanName(str(o.artist, 150).trim()), album: str(o.album, 150).trim(), year: y >= 1900 && y <= 2100 ? String(y) : '', format: hasFmt(o.format) ? o.format : null,
-    label: str(o.label, 100).trim(), genres: (Array.isArray(o.genres) ? o.genres : []).slice(0, 4).map(g => str(g, 30).trim()).filter(Boolean), tracks,
+    label: str(o.label, 100).trim(), genres: (Array.isArray(o.genres) ? o.genres : []).slice(0, 4).map(g => canonGenre(str(g, 30))).filter(Boolean), tracks,
     source: src, confidence: ['alta', 'media', 'baixa'].includes(o.confidence) ? o.confidence : 'media', notes: str(o.notes, 300).trim()};
 }
 const blobToB64 = async b => (await blobToDataURL(b)).split(',')[1];
@@ -1306,8 +1348,8 @@ Regras importantes:
 7. Se não conseguir identificar nada, devolva campos vazios e "confidence": "baixa".
 
 Responda SOMENTE com um objeto JSON válido, sem markdown e sem texto antes ou depois, neste formato:
-{"artist":"","album":"","year":null,"format":null,"label":"","genres":[],"tracks":[{"pos":"A1","title":"","artist":""}],"tracks_source":"web|nenhuma","confidence":"alta|media|baixa","notes":""}
-"genres" aceita até 4 gêneros em português.`;
+{"artist":"","album":"","year":null,"format":null,"label":"","genres":[],"tracks":[{"pos":"A1","title":"","artist":"","genre":""}],"tracks_source":"web|nenhuma","confidence":"alta|media|baixa","notes":""}
+"genres" aceita até 4 gêneros em português; prefira estes nomes: ${BASE_GENRES.join(", ")}. Só preencha "genre" numa faixa quando o gênero dela for diferente do predominante do disco (coletâneas e trilhas de novela com estilos variados).`;
 async function aiRun(items, system, mk, c, custom, byName) {
   let raw;
   if (c.prov === 'gemini') {
@@ -1354,6 +1396,58 @@ async function aiByName(q, force) {
     await aiRun([{t: `Pesquisa do usuário: “${q}”.\n` + (h.length ? `Outros dados informados: ${h.map(x => x[0] + ' = ' + x[1]).join('; ')}.\n` : '') + 'Identifique o disco e responda apenas com o JSON.'}], AI_SYSTEM_NAME, mk, {...c, web: true}, custom, true);
   } catch (e) { aiFail(e); }
 }
+// chamada de IA que devolve JSON (sem pesquisa na web): usada para recorte e para gêneros
+async function aiJson({system, items, strong = false, maxTokens = 4096}) {
+  const c = aiCfg();
+  if (!c.key) { const e = new Error('sem chave'); e.code = 'nokey'; throw e; }
+  let raw;
+  if (c.prov === 'gemini') {
+    const kind = strong ? 'flash' : 'lite';
+    const parts = items.map(x => x.t != null ? {text: x.t} : {inline_data: {mime_type: 'image/jpeg', data: x.img}});
+    raw = await callGeminiSmart({key: c.key, model: c.gid || LS.get('gs-ga-' + kind) || GM_MODELS[kind], system, parts, web: false, json: true, maxTokens}, kind);
+  } else {
+    const content = items.map(x => x.t != null ? {type: 'text', text: x.t} : {type: 'image', source: {type: 'base64', media_type: 'image/jpeg', data: x.img}});
+    raw = await callClaude({key: c.key, model: AI_MODELS[strong ? c.model : 'eco'], system, content, web: false, maxTokens});
+  }
+  return parseAIJson(raw);
+}
+const GENRE_SYSTEM = `Você classifica discos para um colecionador brasileiro. Para cada disco informado, devolva de 1 a 3 gêneros musicais em português. Prefira estes nomes quando couberem: ${BASE_GENRES.join(', ')}. Em coletâneas e trilhas sonoras de novela ou filme, inclua "Trilha sonora" e o gênero predominante. Se não souber, devolva a lista vazia. Responda SOMENTE com JSON: {"items":[{"id":"","genres":[""]}]}`;
+async function aiGenresFor(list) {
+  const text = JSON.stringify(list.map(x => ({id: x.id, artista: x.artist, album: x.album, ano: x.year || null, faixas: (x.tracks || []).slice(0, 6).map(t => t.t + (t.a ? ' — ' + t.a : ''))})));
+  const j = await aiJson({system: GENRE_SYSTEM, items: [{t: text}]});
+  const out = new Map();
+  (Array.isArray(j.items) ? j.items : []).forEach(o => {
+    const gs = (o && Array.isArray(o.genres) ? o.genres : []).map(canonGenre).filter(Boolean).slice(0, 3);
+    if (o && o.id != null && gs.length) out.set(String(o.id), gs);
+  });
+  return out;
+}
+async function suggestGenresForForm() {
+  if (!draft || !$('#f')) return;
+  const artist = $('#f-artist').value.trim(), album = $('#f-album').value.trim(); if (!artist && !album) return;
+  try {
+    const m = await aiGenresFor([{id: 'form', artist, album, year: $('#f-year').value, tracks: parseTracks($('#f-tracks').value)}]);
+    const gs = m.get('form'); if (!gs || !draft || !$('#f') || draft.genres.length) return;
+    gs.forEach(addGenre); toast('Sugeri os gêneros: ' + gs.join(', ') + '. Confira.');
+  } catch (e) { /* gêneros são opcionais: falha em silêncio */ }
+}
+async function fillGenres() {
+  const c = aiCfg(); if (!c.key) return openAISettings();
+  const todo = state.items.filter(i => !i.genres.length);
+  if (!todo.length) return toast('Todos os seus achados já têm gênero.');
+  const calls = Math.ceil(todo.length / 20);
+  if (!(await dialog({msg: `Pedir à IA os gêneros de ${todo.length} ${todo.length === 1 ? 'achado' : 'achados'} sem gênero? Serão ${calls} ${calls === 1 ? 'chamada' : 'chamadas'} à IA. Você pode corrigir depois, item por item.`, ok: 'Completar'}))) return;
+  let done = 0;
+  try {
+    for (let i = 0; i < todo.length; i += 20) {
+      toast(`Completando gêneros… ${Math.min(i + 20, todo.length)} de ${todo.length}`);
+      const chunk = todo.slice(i, i + 20), m = await aiGenresFor(chunk.map(x => ({id: x.id, artist: x.artist, album: x.album, year: x.year, tracks: x.tracks})));
+      for (const it of chunk) { const gs = m.get(it.id); if (gs) { it.genres = gs; await DB.put('items', it); done++; } }
+    }
+    toast(`Gêneros completados em ${done} de ${todo.length} achados.`);
+  } catch (e) { toast(aiErrMsg(e) + (done ? ` (${done} já foram completados)` : '')); }
+  if (sheetOpen) closeSheet(); render();
+}
 function aiCard() {
   const r = aiResult; if (!r) return;
   const srcTxt = {impressa: 'lidas da lista impressa no disco', web: 'encontradas na web: confira', memoria: 'sem fonte confirmada: confira com cuidado'}[r.source];
@@ -1379,6 +1473,8 @@ function openAISettings() {
     <label class="lbl" for="set-prov">IA que lê as fotos</label>
     <select id="set-prov" class="sel"><option value="gemini" ${c.prov === 'gemini' ? 'selected' : ''}>Gemini do Google (gratuito)</option><option value="claude" ${c.prov === 'claude' ? 'selected' : ''}>Claude da Anthropic (pago por uso)</option></select>
     <label class="chk"><input type="checkbox" id="set-web" ${c.web ? 'checked' : ''}><span>Pesquisar na web para completar as faixas</span></label>
+    <label class="chk"><input type="checkbox" id="set-agen" ${c.agen ? 'checked' : ''}><span>Sugerir gêneros com IA quando a busca não trouxer</span></label>
+    <label class="chk"><input type="checkbox" id="set-acrop" ${c.acrop ? 'checked' : ''}><span>Recortar a foto e reconhecer o formato com IA automaticamente (usa uma chamada da IA por foto)</span></label>
     <details ${noKey || c.prov === 'gemini' ? 'open' : ''}><summary>1. Gemini do Google (gratuito)</summary>
       <p class="hint">Gratuito com a sua conta Google. Lê a frente e o verso do disco e pesquisa no Google para achar a lista de faixas. O Google tem um limite diário no nível gratuito e não divulga o número. Importante: nesse nível, o Google pode usar o que você enviar para treinar os modelos dele.</p>
       <label class="lbl" for="set-gkey">Chave do Google (Gemini)</label><input id="set-gkey" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="AIza…" value="${esc(c.gkey)}">
@@ -1422,7 +1518,7 @@ function openAISettings() {
     if (!b) { if (e.target === d) close(); return; }
     if (b.dataset.d === 'no') return close();
     if (b.dataset.d === 'ok') {
-      LS.set('gs-prov', $('#set-prov').value); LS.set('gs-web', $('#set-web').checked ? '1' : '0');
+      LS.set('gs-prov', $('#set-prov').value); LS.set('gs-web', $('#set-web').checked ? '1' : '0'); LS.set('gs-agen', $('#set-agen').checked ? '1' : '0'); LS.set('gs-acrop', $('#set-acrop').checked ? '1' : '0');
       LS.set('gs-gkey', $('#set-gkey').value.trim()); LS.set('gs-gmodel', $('#set-gmodel').value); LS.set('gs-gid', $('#set-gid').value.trim());
       LS.set('gs-akey', $('#set-akey').value.trim()); LS.set('gs-model', $('#set-model').value); LS.set('gs-discogs', $('#set-dg').value.trim());
       close(); toast('Configurações guardadas');
@@ -1465,7 +1561,7 @@ function parsePasted(text, order = 'ta') {
       else if (/^(album|titulo|disco)$/.test(k)) out.album = v;
       else if (/^(ano|lancamento)$/.test(k)) { const y = v.match(/\b(19|20)\d{2}\b/); if (y) out.year = y[0]; }
       else if (k === 'formato') out.format = /fita|cassete|cassette|k7/i.test(v) ? 'fita' : /vinil|vinyl|\blp\b/i.test(v) ? 'vinil' : /\bcd\b/i.test(v) ? 'cd' : null;
-      else if (/^(genero|generos|estilo|estilos)$/.test(k)) out.genres = v.split(/[,;/]/).map(x => x.trim()).filter(Boolean).slice(0, 5);
+      else if (/^(genero|generos|estilo|estilos)$/.test(k)) out.genres = v.split(/[,;/]/).map(x => canonGenre(x)).filter(Boolean).slice(0, 5);
       else if (/^(gravadora|selo|label)$/.test(k)) out.label = v;
       else if (/^(nota|notas|observacoes)$/.test(k)) out.notes = v;
       else { inTracks = true; if (v) rawTracks.push(v); }
@@ -1567,15 +1663,20 @@ async function cropPhoto(src) {
   let bmp;
   try { bmp = await loadBitmapFrom(src); } catch (e) { toast('Não consegui abrir essa foto. Tente tirar outra.'); return null; }
   CR.work = makeWork(bmp); if (bmp.close) bmp.close();
-  CR.ratio = null; CR.drag = null; syncCropChips(); cropDefaultRect();
+  CR.ratio = null; CR.drag = null; CR.touched = false; CR.fmtHint = null; syncCropChips(); const okAuto = cropAutoRect();
   $('#crop').hidden = false; ovOpen();
   await new Promise(r => requestAnimationFrame(r));
   layoutCrop(); drawCrop();
-  return new Promise(res => { CR.resolve = res; });
+  const cf = aiCfg(); $('#caiai').hidden = !cf.key;
+  cropMsg(okAuto ? 'Recorte automático aplicado. Ajuste se precisar.' : 'Não achei o contorno sozinho: arraste os cantos.');
+  const pr = new Promise(res => { CR.resolve = res; });
+  if (cf.key && cf.acrop) cropWithAI(true);
+  return pr;
 }
 function cropFinish(blob) {
   if ($('#crop').hidden) return;
   $('#crop').hidden = true; ovClose();
+  lastCropMeta = {format: blob ? CR.fmtHint : null};
   const r = CR.resolve; CR.resolve = null; CR.work = null; if (r) r(blob || null);
 }
 function layoutCrop() {
@@ -1631,14 +1732,14 @@ function cropDragTo(p) {
   CR.rect = {x: x1, y: y1, w: x2 - x1, h: y2 - y1};
 }
 function cropMode(m) {
-  CR.ratio = m === 'quadrado' ? 1 : null;
+  CR.touched = true; CR.ratio = m === 'quadrado' ? 1 : null;
   if (CR.ratio) CR.rect = squareIn(CR.rect);
   syncCropChips(); drawCrop();
 }
 function cropRotate() {
   const w = CR.work, c = document.createElement('canvas'); c.width = w.height; c.height = w.width;
   const g = c.getContext('2d'); g.translate(c.width, 0); g.rotate(Math.PI / 2); g.drawImage(w, 0, 0);
-  CR.work = c; cropDefaultRect(); layoutCrop(); drawCrop();
+  CR.work = c; CR.touched = false; const ok = cropAutoRect(); layoutCrop(); drawCrop(); cropMsg(ok ? 'Recorte automático refeito depois de girar.' : '');
 }
 function cropOutput() {
   const r = CR.rect, k = Math.min(1, 1400 / Math.max(r.w, r.h)), c = document.createElement('canvas');
@@ -1648,12 +1749,85 @@ function cropOutput() {
 }
 (() => {
   const cv = $('#cropcv'), pt = e => { const b = cv.getBoundingClientRect(); return {x: (e.clientX - b.left) / CR.scale, y: (e.clientY - b.top) / CR.scale}; };
-  cv.addEventListener('pointerdown', e => { if (!CR.work) return; const p = pt(e), h = cropHit(p.x, p.y); if (!h) return; e.preventDefault(); CR.drag = {h, p, r0: {...CR.rect}}; try { cv.setPointerCapture(e.pointerId); } catch (x) {} });
+  cv.addEventListener('pointerdown', e => { if (!CR.work) return; const p = pt(e), h = cropHit(p.x, p.y); if (!h) return; e.preventDefault(); CR.touched = true; CR.drag = {h, p, r0: {...CR.rect}}; try { cv.setPointerCapture(e.pointerId); } catch (x) {} });
   cv.addEventListener('pointermove', e => { if (!CR.drag || !CR.work) return; e.preventDefault(); cropDragTo(pt(e)); drawCrop(); });
   const end = () => { CR.drag = null; };
   cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
   window.addEventListener('resize', () => { if (CR.work && !$('#crop').hidden) { layoutCrop(); drawCrop(); } });
 })();
+let lastCropMeta = null;
+// acha o contorno do item na foto comparando com a cor do fundo (sem IA, sem internet)
+function detectItemBox(work) {
+  const W = work.width, H = work.height, k = 96 / Math.max(W, H), w = Math.max(8, Math.round(W * k)), h = Math.max(8, Math.round(H * k));
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const g = c.getContext('2d', {willReadFrequently: true}); g.drawImage(work, 0, 0, w, h);
+  const d = g.getImageData(0, 0, w, h).data, n = w * h;
+  const bd = Math.max(1, Math.round(Math.min(w, h) * .06)), R = [], G = [], B = [];
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (x < bd || y < bd || x >= w - bd || y >= h - bd) { const i = (y * w + x) * 4; R.push(d[i]); G.push(d[i + 1]); B.push(d[i + 2]); }
+  const med = a => a.sort((p, q) => p - q)[a.length >> 1], bg = [med(R), med(G), med(B)];
+  const dist = new Float32Array(n); let mx = 0;
+  for (let i = 0; i < n; i++) { const dr = d[i * 4] - bg[0], dg = d[i * 4 + 1] - bg[1], db = d[i * 4 + 2] - bg[2], v = Math.sqrt(dr * dr + dg * dg + db * db); dist[i] = v; if (v > mx) mx = v; }
+  if (mx < 45) return null;
+  const bins = 48, hist = new Array(bins).fill(0); for (let i = 0; i < n; i++) hist[Math.min(bins - 1, Math.floor(dist[i] / mx * bins))]++;
+  let sum = 0; for (let i = 0; i < bins; i++) sum += i * hist[i];
+  let sB = 0, wB = 0, best = 0, thr = 0;
+  for (let i = 0; i < bins; i++) { wB += hist[i]; if (!wB) continue; const wF = n - wB; if (!wF) break; sB += i * hist[i]; const mB = sB / wB, mF = (sum - sB) / wF, v = wB * wF * (mB - mF) * (mB - mF); if (v > best) { best = v; thr = i; } }
+  const T = Math.max(22, (thr + 1) / bins * mx);
+  let mask = new Uint8Array(n); for (let i = 0; i < n; i++) mask[i] = dist[i] > T ? 1 : 0;
+  const morph = (m, erode) => { const o = new Uint8Array(n); for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { let all = 1, any = 0; for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const yy = y + dy, xx = x + dx, v = (yy < 0 || xx < 0 || yy >= h || xx >= w) ? 0 : m[yy * w + xx]; all &= v; any |= v; } o[y * w + x] = erode ? all : any; } return o; };
+  mask = morph(morph(mask, true), false);    // abertura: tira ruído
+  mask = morph(morph(mask, false), true);    // fechamento: junta detalhes internos da capa
+  const seen = new Uint8Array(n); let bc = null;
+  for (let s0 = 0; s0 < n; s0++) {
+    if (!mask[s0] || seen[s0]) continue;
+    const st = [s0]; seen[s0] = 1; let a = 0, x1 = w, y1 = h, x2 = 0, y2 = 0;
+    while (st.length) {
+      const p = st.pop(), x = p % w, y = (p / w) | 0; a++; if (x < x1) x1 = x; if (x > x2) x2 = x; if (y < y1) y1 = y; if (y > y2) y2 = y;
+      for (const q of [p - 1, p + 1, p - w, p + w]) { if (q < 0 || q >= n || seen[q] || !mask[q]) continue; if ((q === p - 1 && x === 0) || (q === p + 1 && x === w - 1)) continue; seen[q] = 1; st.push(q); }
+    }
+    if (!bc || a > bc.a) bc = {a, x1, y1, x2, y2};
+  }
+  if (!bc) return null;
+  const bw = bc.x2 - bc.x1 + 1, bh = bc.y2 - bc.y1 + 1;
+  if (bc.a / n < .08 || bw * bh / n > .97 || bw / bh > 3.2 || bh / bw > 3.2) return null;
+  const m = .012 * Math.max(w, h), x = Math.max(0, bc.x1 - m) / w * W, y = Math.max(0, bc.y1 - m) / h * H, x2 = Math.min(w, bc.x2 + 1 + m) / w * W, y2 = Math.min(h, bc.y2 + 1 + m) / h * H;
+  return {rect: {x, y, w: x2 - x, h: y2 - y}, ratio: Math.max(bw, bh) / Math.min(bw, bh)};
+}
+const cropMsg = t => { const e = $('#cropmsg'); if (e) e.textContent = t || ''; };
+function cropAutoRect() {
+  const b = CR.work ? detectItemBox(CR.work) : null;
+  if (b) { CR.rect = CR.ratio ? squareIn(b.rect) : b.rect; CR.fmtHint = b.ratio >= 1.4 ? 'fita' : null; return true; }
+  cropDefaultRect(); CR.fmtHint = null; return false;
+}
+const CROP_SYSTEM = `Você ajuda a catalogar discos. Na foto há um item de música física (capa de LP de vinil, caixa ou encarte de CD, ou fita cassete K7), possivelmente sobre uma mesa ou outro cenário.
+Responda SOMENTE com JSON: {"found":true,"box":[ymin,xmin,ymax,xmax],"format":"vinil|cd|fita|null","side":"frente|verso|outro","confidence":"alta|media|baixa"}
+"box" são coordenadas de 0 a 1000 que envolvem apenas o item (a capa inteira ou a caixa), sem o cenário. Se a foto mostrar só o disco redondo, envolva o disco. "format": "vinil" para LP ou compacto de vinil (ou sua capa quadrada grande), "cd" para CD (caixa, encarte ou o próprio disco), "fita" para fita cassete. Se não houver item, devolva {"found":false}.`;
+async function cropWithAI(silent) {
+  const c = aiCfg(), work = CR.work; if (!work) return;
+  if (!c.key) { if (!silent) cropMsg('Ligue a IA em Mais → Identificação automática.'); return; }
+  if (!navigator.onLine) { if (!silent) cropMsg('Sem internet para consultar a IA.'); return; }
+  cropMsg('Pedindo à IA para achar o item…');
+  try {
+    const k = Math.min(1, 768 / Math.max(work.width, work.height)), c2 = document.createElement('canvas'); c2.width = Math.round(work.width * k); c2.height = Math.round(work.height * k);
+    c2.getContext('2d').drawImage(work, 0, 0, c2.width, c2.height);
+    const j = await aiJson({system: CROP_SYSTEM, items: [{img: c2.toDataURL('image/jpeg', .8).split(',')[1]}, {t: 'Devolva apenas o JSON.'}], strong: true, maxTokens: 512});
+    if (CR.work !== work) return;   // o editor foi fechado ou trocado de foto
+    const bx = Array.isArray(j.box) ? j.box.map(Number) : null;
+    if (j.found === false || !bx || bx.length !== 4 || bx.some(v => !isFinite(v))) { cropMsg('A IA não achou o item. Ajuste à mão.'); return; }
+    let [y1, x1, y2, x2] = bx.map(v => clamp(v, 0, 1000) / 1000);
+    if (y2 < y1) [y1, y2] = [y2, y1]; if (x2 < x1) [x1, x2] = [x2, x1];
+    if (x2 - x1 < .12 || y2 - y1 < .12) { cropMsg('A IA devolveu um recorte pequeno demais. Ajuste à mão.'); return; }
+    const f = hasFmt(j.format) ? j.format : null; if (f) CR.fmtHint = f;
+    if (CR.touched) { cropMsg('A IA sugeriu um recorte, mas você já tinha ajustado à mão.'); return; }
+    const r = {x: x1 * work.width, y: y1 * work.height, w: (x2 - x1) * work.width, h: (y2 - y1) * work.height};
+    CR.rect = CR.ratio ? squareIn(r) : r; drawCrop();
+    cropMsg(`A IA ajustou o recorte${f ? ' e reconheceu: ' + FORMATS[f].name : ''}.`);
+  } catch (e) { if (!silent || e.code !== 'nokey') cropMsg(aiErrMsg(e)); }
+}
+function setFormatAuto(f) {
+  draft.format = f; document.querySelectorAll('#seg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === f));
+  toast(`Parece ${f === 'fita' ? 'uma fita' : f === 'cd' ? 'um CD' : 'um vinil'}: ajustei o formato.`);
+}
 async function detectFromFile(f) {
   try { const bmp = await createImageBitmap(f); const c = await detectBarcode(bmp); if (bmp.close) bmp.close(); return c; } catch (e) { return null; }
 }
@@ -1714,7 +1888,7 @@ const A = {
     await DB.del('items', it.id); state.items = state.items.filter(i => i.id !== it.id); toast('Achado removido da caixa'); closeSheet(); render();
   },
   // formulário
-  fmt: el => { draft.format = el.dataset.v; document.querySelectorAll('#seg button').forEach(b => b.setAttribute('aria-pressed', b === el)); },
+  fmt: el => { draft.format = el.dataset.v; draft.formatTouched = true; document.querySelectorAll('#seg button').forEach(b => b.setAttribute('aria-pressed', b === el)); },
   fgenre: el => {
     const g = el.dataset.v, k = draft.genres.indexOf(g);
     if (k >= 0) draft.genres.splice(k, 1); else draft.genres.push(g);
@@ -1730,6 +1904,7 @@ const A = {
   bcsearch: () => bcSearch($('#f-bc').value),
   aiid: () => aiIdentify(),
   aipro: () => { const n = aiNextModel(aiResult); return aiLast && aiLast.kind === 'name' ? aiByName(aiLast.q, n) : aiIdentify(n); },
+  fillgen: () => fillGenres(),
   aiq: () => {
     let q = ($('#f-q').value || '').trim();
     if (!q) q = [$('#f-artist').value, $('#f-album').value].map(v => (v || '').trim()).filter(Boolean).join(' ');
@@ -1757,8 +1932,10 @@ const A = {
     document.querySelectorAll('.thumb').forEach(b => b.setAttribute('aria-pressed', b === el));
   },
   crot: () => { cropRotate(); },
+  cauto: () => { CR.touched = false; const ok = cropAutoRect(); cropMsg(ok ? 'Recorte automático refeito.' : 'Não achei o contorno sozinho: arraste os cantos.'); drawCrop(); },
+  caiai: () => cropWithAI(false),
   cmode: el => { cropMode(el.dataset.v); },
-  cfull: () => { CR.rect = {x: 0, y: 0, w: CR.work.width, h: CR.work.height}; if (CR.ratio) cropMode('livre'); drawCrop(); },
+  cfull: () => { CR.touched = true; CR.rect = {x: 0, y: 0, w: CR.work.width, h: CR.work.height}; if (CR.ratio) cropMode('livre'); drawCrop(); },
   cok: async () => { const b = await cropOutput(); cropFinish(b); },
   ccancel: () => cropFinish(null),
   // setlist
@@ -1766,11 +1943,13 @@ const A = {
   slformat: el => { state.sl.format = el.dataset.v; render(); },
   gen: () => { genSetlist(); $('#setresult').innerHTML = setResultHTML(); const r = $('#setresult'); r.scrollIntoView({behavior: 'smooth', block: 'start'}); },
   swap: el => {
-    const i = +el.dataset.i, r = state.result, cur = r[i], per = state.sl.perAlbum;
-    const used = new Set(r.map(e => e.key));
-    const cand = shuffle(buildPool()).find(e => !used.has(e.key) && (!per || r.filter((x, k) => k !== i && x.itemId === e.itemId).length < per));
+    const i = +el.dataset.i, r = state.result, cur = r[i], used = new Set(r.map(e => e.key)), pool = buildPool().filter(e => !used.has(e.key));
+    // prefere outra música do mesmo disco (sem trocar de disco), depois de um disco que já está na lista
+    const cand = shuffle(pool.filter(e => e.itemId === cur.itemId))[0] || shuffle(pool.filter(e => r.some(x => x.itemId === e.itemId)))[0] || shuffle(pool.filter(e => e.format === cur.format))[0] || shuffle(pool)[0];
     if (!cand) return toast('Não há outra música disponível com esses filtros');
-    r[i] = cand; $('#setresult').innerHTML = setResultHTML();
+    r[i] = cand;
+    let k = 0; setGroups(r).forEach(g => { g.rows.map(x => x.e).sort((x, y) => (x.idx ?? 0) - (y.idx ?? 0)).forEach(e => { r[k++] = e; }); });   // mantém a ordem do disco
+    $('#setresult').innerHTML = setResultHTML();
   },
   rmtrack: el => { state.result.splice(+el.dataset.i, 1); $('#setresult').innerHTML = setResultHTML(); },
   copyset: async () => {
@@ -1803,12 +1982,14 @@ document.addEventListener('change', async e => {
   const t = e.target;
   if (t.id === 'sort') { state.sort = t.value; render(); }
   if (t.id === 'slper') state.sl.perAlbum = +t.value;
+  if (t.id === 'slgroup') state.sl.group = t.checked;
   if (t.id === 'importFile' && t.files[0]) { await importBackup(t.files[0]); t.value = ''; }
   if (t.dataset.in === 'photo' && t.files[0]) {
     const slot = +t.dataset.slot || 0, f = t.files[0]; t.value = '';
     const codeP = HAS_BD ? detectFromFile(f) : Promise.resolve(null);   // lê o código de barras na foto original, em alta resolução
     const blob = await cropPhoto(f);
     if (!draft) return;
+    { const meta = lastCropMeta; if (blob && slot === 0 && meta && meta.format && !draft.formatTouched && draft.format !== meta.format) setFormatAuto(meta.format); }
     if (blob) { draft.photos[slot] = blob; if (slot + 1 > (draft.slots || 2)) draft.slots = slot + 1; $('#photoArea').innerHTML = photoAreaHTML(); }
     const code = await codeP, bc = $('#f-bc');
     if (code && bc) { bc.value = code; toast('Achei um código de barras na foto. Procurando seu disco…'); bcSearch(code); }

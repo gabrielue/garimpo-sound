@@ -74,3 +74,14 @@ NOVIDADES DESTA VERSÃO
 - "Perguntar à IA pelo nome": a IA pesquisa na web e traz a lista de faixas sem precisar de foto (mesma chave).
 - O app descobre sozinho qual modelo do Gemini a sua chave pode usar e lembra dele. Se der erro de modelo:
   Mais > Identificação automática > Avançado > "Ver modelos disponíveis" e digite um deles em "Outro modelo".
+
+NOVIDADES DA VERSÃO 8
+- Recorte automático: ao fotografar, o app acha o contorno do item sozinho (sem IA, sem internet). Fita é reconhecida
+  pela proporção; vinil x CD precisa da IA ("Recortar com IA", "Identificar pelas fotos") ou da sua escolha.
+  Em Mais > Identificação automática dá para ligar o recorte por IA em toda foto (usa uma chamada por foto).
+- Gêneros padronizados (rock and roll, hard rock -> Rock; música popular brasileira -> MPB...), sugeridos pela IA quando
+  a busca não traz, e gênero por música em coletâneas e trilhas de novela.
+- Mais > "Completar gêneros com IA": preenche de uma vez os achados antigos que estão sem gênero.
+- Setlist por disco: poucos discos, sequências na ordem do disco, sem virar de lado quando possível, vinis/CDs/fitas em
+  blocos, com a contagem de trocas de disco e viradas de lado.
+- Seus itens antigos continuam funcionando; faça o backup antes de atualizar.
