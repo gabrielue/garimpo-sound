@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Garimpo Sound — acervo de vinis, CDs e fitas</title>
+<meta name="theme-color" content="#12100c">
+<meta name="color-scheme" content="dark">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data:; media-src 'self' blob:; connect-src 'self' data: blob: https://musicbrainz.org https://coverartarchive.org https://*.archive.org; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="description" content="Catalogue seus vinis, CDs e fitas, ache qualquer música da sua coleção e monte setlists.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Garimpo Sound">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<!-- Fontes gratuitas (opcional): sem internet o app usa fontes do sistema com o mesmo estilo -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&family=Limelight&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg:#12100c; --bg2:#1a1610; --surf:#211b13; --surf2:#2b2318;
+  --gold:#d4af61; --gold-hi:#f0d78f; --gold-deep:#8f6f2f;
+  --paper:#eadfc6; --muted:#a69a82; --line:rgba(212,175,97,.30); --hair:rgba(212,175,97,.14);
+  --red:#d2634d; --teal:#7fb8ae; --rust:#d0794b;
+  --disp:'Limelight','Bodoni 72','Didot','Playfair Display',Georgia,serif;
+  --ui:'Jost','Futura','Avenir Next','Century Gothic',system-ui,sans-serif;
+  --c:12px;
+  --nav:68px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--bg);color:var(--paper);font:400 16px/1.45 var(--ui);min-height:100dvh;
+  -webkit-tap-highlight-color:transparent;
+  padding-top:env(safe-area-inset-top);
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .83  0 0 0 0 .69  0 0 0 0 .38  0 0 0 .05 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+input,select,textarea{font:inherit;color:inherit}
+a{color:var(--gold)}
+:focus-visible{outline:2px solid var(--gold-hi);outline-offset:2px}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+svg.i{display:block;flex:none}
+
+/* ---------- Marca ---------- */
+.brand{position:relative;height:96px;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:12px;text-align:center}
+.brand svg.fan{position:absolute;inset:0;width:100%;height:100%}
+.wordmark{position:relative;font-family:var(--disp);font-size:30px;line-height:1.1;letter-spacing:.05em;white-space:nowrap;
+  background:linear-gradient(180deg,var(--gold-hi),var(--gold) 55%,var(--gold-deep));-webkit-background-clip:text;background-clip:text;color:transparent}
+.tagline{position:relative;font-size:13px;color:var(--muted);letter-spacing:.06em}
+.rule{display:flex;align-items:center;gap:10px;max-width:880px;margin:0 auto;padding:0 20px}
+.rule::before,.rule::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--gold-deep))}
+.rule::after{transform:scaleX(-1)}
+.rule i{width:7px;height:7px;transform:rotate(45deg);background:var(--gold)}
+
+/* ---------- Páginas ---------- */
+#main{max-width:880px;margin:0 auto;padding:18px 18px calc(var(--nav) + 36px + env(safe-area-inset-bottom))}
+.pg h1{font-family:var(--disp);font-weight:400;font-size:26px;line-height:1.15;color:var(--paper)}
+.pg h2{font-family:var(--disp);font-weight:400;font-size:18px;color:var(--gold);margin:26px 0 6px}
+.sub{color:var(--muted);font-size:14px;margin:4px 0 16px;max-width:60ch}
+.bar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:18px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chips.scroll{flex-wrap:nowrap;overflow-x:auto;padding-bottom:6px;margin:0 -18px 14px;padding-inline:18px;scrollbar-width:none}
+.chips.scroll::-webkit-scrollbar{display:none}
+.chip{min-height:38px;padding:0 14px;border:1px solid var(--line);border-radius:2px;font-size:14px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;color:var(--paper);background:var(--bg2)}
+.chip[aria-pressed=true]{background:var(--gold);color:#17120a;border-color:var(--gold);font-weight:600}
+select.sel{min-height:38px;background:var(--bg2);border:1px solid var(--line);border-radius:2px;padding:0 10px;font-size:14px}
+
+/* ---------- Molduras art déco ---------- */
+.frame{--c:12px;position:relative;padding:1.5px;background:linear-gradient(135deg,var(--gold-hi),var(--gold-deep) 55%,var(--gold));
+  clip-path:polygon(var(--c) 0,calc(100% - var(--c)) 0,100% var(--c),100% calc(100% - var(--c)),calc(100% - var(--c)) 100%,var(--c) 100%,0 calc(100% - var(--c)),0 var(--c))}
+.frame .cover{clip-path:polygon(calc(var(--c) - 1px) 0,calc(100% - var(--c) + 1px) 0,100% calc(var(--c) - 1px),100% calc(100% - var(--c) + 1px),calc(100% - var(--c) + 1px) 100%,calc(var(--c) - 1px) 100%,0 calc(100% - var(--c) + 1px),0 calc(var(--c) - 1px))}
+.cover{position:relative;aspect-ratio:1;background:var(--surf);overflow:hidden;display:block;width:100%}
+.cover img{width:100%;height:100%;object-fit:cover;display:block}
+.cover.ph{background:repeating-conic-gradient(from 0deg at 50% 118%,rgba(212,175,97,.16) 0 5deg,transparent 5deg 10deg),radial-gradient(circle at 50% 118%,var(--surf2),var(--bg2) 70%)}
+.cover.ph .ini{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--disp);font-size:clamp(40px,12vw,64px);color:var(--fc);opacity:.92}
+
+/* ---------- Grade de capas ---------- */
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:26px 18px}
+@media(min-width:560px){.grid{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:820px){.grid{grid-template-columns:repeat(4,1fr)}}
+.card{display:block;text-align:left;width:100%}
+.card .top{position:relative}
+.fbadge{position:absolute;left:8px;top:8px;width:30px;height:30px;border-radius:50%;background:rgba(18,16,12,.88);border:1px solid var(--fc);color:var(--fc);display:grid;place-items:center;z-index:2}
+.sticker{position:absolute;right:-7px;bottom:-11px;z-index:3;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;
+  background:radial-gradient(circle at 35% 30%,var(--gold-hi),var(--gold) 60%,var(--gold-deep));color:#17120a;font-weight:700;font-size:12px;letter-spacing:-.02em;
+  transform:rotate(-10deg);box-shadow:0 2px 0 rgba(0,0,0,.45),inset 0 0 0 2px rgba(18,16,12,.0),inset 0 0 0 3px rgba(18,16,12,.0);}
+.sticker::after{content:"";position:absolute;inset:3px;border-radius:50%;border:1px dashed rgba(18,16,12,.5)}
+.card .meta{padding:14px 2px 0;display:grid;gap:1px}
+.card .al{font-weight:500;font-size:15px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card .ar{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card .yr{font-size:12px;color:var(--gold-deep)}
+
+/* ---------- Vazio ---------- */
+.empty{text-align:center;padding:36px 14px 10px;display:grid;justify-items:center;gap:14px}
+.empty .fan{width:150px;height:76px}
+.empty h2{margin:0;color:var(--paper)}
+.empty p{color:var(--muted);max-width:34ch}
+.btnrow{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+
+/* ---------- Botões ---------- */
+.btn{--c:9px;min-height:46px;padding:0 20px;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:15px;color:#17120a;
+  background:linear-gradient(180deg,var(--gold-hi),var(--gold) 60%,#bf9a4c);
+  clip-path:polygon(var(--c) 0,calc(100% - var(--c)) 0,100% 50%,calc(100% - var(--c)) 100%,var(--c) 100%,0 50%);padding-inline:26px}
+.btn.ghost{background:none;color:var(--gold);clip-path:none;border:1px solid var(--gold);border-radius:2px;padding-inline:18px}
+.btn.danger{background:none;color:var(--red);clip-path:none;border:1px solid var(--red);border-radius:2px;padding-inline:18px}
+.btn:active{filter:brightness(.92)}
+.icon{width:44px;height:44px;display:grid;place-items:center;color:var(--gold);border-radius:2px}
+.icon.sm{width:40px;height:40px}
+
+/* ---------- Busca ---------- */
+.search{display:flex;align-items:center;gap:10px;border-bottom:2px solid var(--gold);padding:6px 2px;margin-bottom:16px;color:var(--gold)}
+.search input{flex:1;background:none;border:0;outline:0;font-size:18px;min-height:40px;color:var(--paper);min-width:0}
+.search input::placeholder{color:var(--muted)}
+.search input::-webkit-search-cancel-button{filter:sepia(1) saturate(4) brightness(.9);height:18px;width:18px}
+.row{display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--hair);width:100%;text-align:left}
+.row .th{width:54px;flex:none}
+.row .th .frame{--c:7px}
+.row .tx{flex:1;min-width:0;display:grid}
+.row .t1{font-size:16px;line-height:1.3;overflow:hidden;text-overflow:ellipsis}
+.row .t2{font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .end{flex:none;display:grid;justify-items:end;gap:2px;font-size:12px;color:var(--muted)}
+.row .end svg{color:var(--fc)}
+.pos{font-weight:600;color:var(--gold)}
+mark{background:none;color:var(--gold-hi);font-weight:600;text-decoration:underline;text-decoration-color:var(--gold-deep);text-underline-offset:3px}
+.note{color:var(--muted);font-size:14px}
+.dice{margin:8px 0 0}
+
+/* ---------- Setlist ---------- */
+.panel-box{border:1px solid var(--line);padding:16px;background:var(--bg2);margin:6px 0 16px;display:grid;gap:16px}
+.lbl{font-size:13px;color:var(--gold);margin-bottom:8px;display:block}
+input[type=range]{width:100%;accent-color:var(--gold);min-height:34px}
+.cnt{font-family:var(--disp);font-size:24px;color:var(--paper)}
+.set{list-style:none;counter-reset:s}
+.set li{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--hair)}
+.set .n{font-family:var(--disp);color:var(--gold);width:30px;text-align:right;flex:none;font-size:18px}
+.set .tx{flex:1;min-width:0;display:grid}
+.set .t1{font-weight:500;line-height:1.3}
+.set .t2{font-size:13px;color:var(--muted)}
+.set .loc{font-size:12px;color:var(--gold-deep)}
+.pull{display:flex;gap:8px;overflow-x:auto;padding:6px 0 4px;scrollbar-width:none}
+.pull .mini{flex:none;width:64px}
+.pull .mini .frame{--c:7px}
+.pull .mini span{display:block;font-size:11px;color:var(--muted);line-height:1.2;margin-top:5px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+
+/* ---------- Navegação ---------- */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;height:calc(var(--nav) + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);
+  background:var(--bg2);box-shadow:0 -1px 0 var(--gold-deep),0 -4px 0 var(--bg2),0 -5px 0 rgba(212,175,97,.35);display:grid;grid-template-columns:1fr 1fr 84px 1fr 1fr}
+nav.tabs button{display:grid;justify-items:center;align-content:center;gap:3px;font-size:12px;color:var(--muted);min-height:var(--nav)}
+nav.tabs button[aria-current=page]{color:var(--gold-hi)}
+nav.tabs button[aria-current=page] svg{filter:drop-shadow(0 0 6px rgba(212,175,97,.45))}
+nav.tabs .add{position:relative}
+nav.tabs .add span.disc{position:absolute;left:50%;top:-22px;width:62px;height:62px;margin-left:-31px;border-radius:50%;display:grid;place-items:center;color:#17120a;
+  background:repeating-conic-gradient(from 0deg,rgba(18,16,12,.16) 0 6deg,transparent 6deg 12deg),radial-gradient(circle at 35% 30%,var(--gold-hi),var(--gold) 60%,var(--gold-deep));
+  box-shadow:0 0 0 4px var(--bg2),0 0 0 5px var(--gold-deep)}
+nav.tabs .add b{font-weight:500;position:absolute;bottom:8px;left:0;right:0;text-align:center;font-size:12px;color:var(--gold)}
+
+/* ---------- Folhas (detalhe / formulário / menu) ---------- */
+.sheet{position:fixed;inset:0;z-index:50;background:rgba(8,6,4,.78)}
+.sheet[hidden]{display:none}
+.panel{position:absolute;inset:0;max-width:640px;margin:0 auto;background:var(--bg);overflow-y:auto;overscroll-behavior:contain;animation:up .22s ease-out;padding-bottom:calc(30px + env(safe-area-inset-bottom))}
+@keyframes up{from{transform:translateY(26px);opacity:0}to{transform:none;opacity:1}}
+@media(prefers-reduced-motion:reduce){.panel{animation:none}}
+.shtop{position:sticky;top:0;z-index:5;display:grid;grid-template-columns:48px 1fr 48px;align-items:center;padding:calc(6px + env(safe-area-inset-top)) 8px 6px;background:var(--bg);box-shadow:0 1px 0 var(--gold-deep)}
+.shtop h2{font-family:var(--disp);font-weight:400;font-size:18px;text-align:center;color:var(--gold)}
+.shbody{padding:20px 18px}
+
+.hero{display:grid;justify-items:center;gap:20px;margin-bottom:6px}
+.hero .frame{width:min(78vw,300px);--c:18px}
+.hero .ttl{text-align:center;display:grid;gap:4px}
+.hero h1{font-family:var(--disp);font-weight:400;font-size:27px;line-height:1.15}
+.hero .by{font-size:18px;color:var(--gold)}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--hair);border:1px solid var(--hair);margin:20px 0}
+.facts div{background:var(--bg);padding:12px 14px;display:grid;gap:2px}
+.facts small{color:var(--muted);font-size:12px}
+.facts b{font-weight:500}
+.tag{position:relative;display:inline-block;background:linear-gradient(180deg,var(--gold-hi),var(--gold));color:#17120a;font-weight:700;padding:6px 14px 6px 26px;clip-path:polygon(0 50%,13px 0,100% 0,100% 100%,13px 100%)}
+.tag::before{content:"";position:absolute;left:11px;top:50%;width:6px;height:6px;margin-top:-3px;border-radius:50%;background:var(--bg)}
+.tracks{list-style:none}
+.tracks li{display:flex;gap:12px;padding:10px 6px;border-bottom:1px solid var(--hair);align-items:baseline}
+.tracks li.hl{background:rgba(212,175,97,.12);box-shadow:inset 3px 0 0 var(--gold)}
+.tracks .pos{width:34px;flex:none;text-align:right;font-size:14px}
+.tracks .side{padding:16px 6px 6px;color:var(--gold);font-family:var(--disp);font-size:15px;border:0}
+.acts{display:flex;gap:10px;margin-top:26px;flex-wrap:wrap}
+
+.fld{display:grid;gap:6px;margin-bottom:18px}
+.fld>label,.fld>.lbl{font-size:13px;color:var(--gold)}
+.fld input,.fld select,.fld textarea{width:100%;background:var(--surf);border:1px solid var(--line);border-radius:2px;padding:12px;min-height:48px;font-size:16px}
+.fld textarea{min-height:170px;line-height:1.55;resize:vertical}
+.fld .hint{font-size:12.5px;color:var(--muted)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.seg button{display:grid;justify-items:center;gap:4px;padding:12px 6px;border:1px solid var(--line);border-radius:2px;font-size:14px;color:var(--muted)}
+.seg button[aria-pressed=true]{border-color:var(--fc);color:var(--fc);background:rgba(255,255,255,.04);font-weight:600}
+.photo{display:grid;justify-items:center;gap:14px;margin-bottom:22px}
+.photo .frame{width:min(66vw,250px);--c:16px}
+.photo .drop{aspect-ratio:1;display:grid;place-items:center;text-align:center;padding:18px;background:repeating-conic-gradient(from 0deg at 50% 118%,rgba(212,175,97,.10) 0 5deg,transparent 5deg 10deg),var(--bg2);color:var(--muted);font-size:14px}
+.photo .btnrow{gap:8px}
+.addg{display:flex;gap:8px;margin-top:8px}
+.addg input{flex:1;min-height:42px;padding:8px 12px}
+
+.dlg{z-index:70;display:grid;place-items:center;padding:20px}
+.dlg .box{background:var(--bg2);border:1px solid var(--gold);padding:22px;max-width:420px;width:100%;display:grid;gap:16px;box-shadow:0 0 0 4px var(--bg2),0 0 0 5px var(--gold-deep)}
+.dlg .box p{font-size:16px}
+.dlg .box input{background:var(--surf);border:1px solid var(--line);border-radius:2px;padding:12px;min-height:46px;font-size:16px;width:100%}
+.dlg .acts{margin:0}
+.auto{border:1px solid var(--line);border-left:3px solid var(--gold);background:var(--bg2);padding:16px;margin:2px 0 22px;display:grid;gap:12px}
+.auto h3{font-family:var(--disp);font-weight:400;font-size:17px;color:var(--gold);display:flex;gap:8px;align-items:center}
+.auto .hint{font-size:12.5px;color:var(--muted)}
+.auto .btn{width:100%}
+.bc{display:grid;grid-template-columns:1fr auto auto;gap:8px}
+.bc input{min-width:0;background:var(--surf);border:1px solid var(--line);border-radius:2px;padding:10px 12px;min-height:46px;font-size:16px}
+.bc .btn{width:auto;padding-inline:16px}
+.scan{z-index:75;background:#000}
+.scan video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.vf{position:absolute;left:8%;right:8%;top:32%;height:24%;border:2px solid var(--gold);box-shadow:0 0 0 100vmax rgba(8,6,4,.62)}
+.vf::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:var(--gold-hi);box-shadow:0 0 8px var(--gold)}
+.scan-ui{position:absolute;left:0;right:0;bottom:calc(32px + env(safe-area-inset-bottom));display:grid;justify-items:center;gap:14px;color:var(--paper);text-shadow:0 1px 4px #000}
+.scan-ui .btn.ghost{background:rgba(18,16,12,.8)}
+.toast{position:fixed;left:50%;bottom:calc(var(--nav) + 26px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:80;background:var(--gold);color:#17120a;font-weight:600;font-size:14px;padding:10px 20px;max-width:88vw;text-align:center;
+  clip-path:polygon(8px 0,calc(100% - 8px) 0,100% 50%,calc(100% - 8px) 100%,8px 100%,0 50%)}
+.toast[hidden]{display:none}
+.menu-list{display:grid;gap:10px}
+.menu-list .btn{justify-content:flex-start;width:100%}
+.stat{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--hair);border:1px solid var(--hair);margin-bottom:22px}
+.stat div{background:var(--bg);padding:14px 10px;text-align:center}
+.stat b{display:block;font-family:var(--disp);font-weight:400;font-size:22px;color:var(--gold-hi)}
+.stat small{color:var(--muted);font-size:12px}
+.fine{font-size:13px;color:var(--muted);margin-top:18px;max-width:52ch}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand" id="brand">
+    <div class="wordmark">Garimpo Sound</div>
+    <div class="tagline">seu acervo de vinis, CDs e fitas</div>
+  </div>
+  <div class="rule" aria-hidden="true"><i></i></div>
+</header>
+
+<main id="main"></main>
+
+<nav class="tabs" aria-label="Navegação principal">
+  <button data-a="nav" data-v="caixa" id="t-caixa"></button>
+  <button data-a="nav" data-v="garimpar" id="t-garimpar"></button>
+  <button class="add" data-a="new" aria-label="Novo achado"><span class="disc" id="t-add"></span><b>Achado</b></button>
+  <button data-a="nav" data-v="setlist" id="t-setlist"></button>
+  <button data-a="menu" id="t-mais"></button>
+</nav>
+
+<div class="sheet" id="sheet" hidden role="dialog" aria-modal="true"><div class="panel" id="panel"></div></div>
+<div class="sheet dlg" id="dlg" hidden></div>
+<div class="sheet scan" id="scan" hidden role="dialog" aria-modal="true" aria-label="Escanear código de barras">
+  <video id="scanv" playsinline muted></video>
+  <div class="vf" aria-hidden="true"></div>
+  <div class="scan-ui"><p>Aponte a câmera para o código de barras, na traseira da capa</p><button class="btn ghost" data-a="scanclose">Cancelar</button></div>
+</div>
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script>
+'use strict';
+/* =====================================================================
+   Garimpo Sound — catálogo de vinis, CDs e fitas (PWA)
+   Dados ficam no aparelho (IndexedDB). Nada é enviado a servidor algum.
+   ===================================================================== */
+
+// ---------- utilidades ----------
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fold = s => String(s ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const norm = s => fold(s).trim();
+const LS = {get: k => { try { return localStorage.getItem(k); } catch (e) { return null; } }, set: (k, v) => { try { localStorage.setItem(k, String(v)); } catch (e) {} }};
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const brl = v => new Intl.NumberFormat('pt-BR', {style:'currency', currency:'BRL'}).format(v);
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+
+const FORMATS = {
+  vinil: {name:'Vinil', plural:'vinis', color:'#d4af61'},
+  cd:    {name:'CD',    plural:'CDs',   color:'#7fb8ae'},
+  fita:  {name:'Fita',  plural:'fitas', color:'#d0794b'}
+};
+const CONDS = [['M','Perfeito / lacrado'],['NM','Quase perfeito'],['VG+','Muito bom +'],['VG','Muito bom'],['G','Bom'],['P','Regular / ruim']];
+const BASE_GENRES = ['MPB','Samba','Bossa Nova','Rock','Pop','Jazz','Blues','Soul','Funk','Disco','Reggae','Forró','Hip hop','Eletrônica','Clássica','Country','Folk','Metal','Punk','Gospel'];
+
+// ---------- ícones ----------
+const P = {
+  vinil:'<circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="5.6" stroke-dasharray="2 2" opacity=".65"/><circle cx="12" cy="12" r="2.2" fill="currentColor" stroke="none"/>',
+  cd:'<circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="2.8"/><path d="M6 9a7 7 0 0 1 4-3.4" opacity=".7"/>',
+  fita:'<rect x="2.5" y="5.5" width="19" height="13" rx="2"/><circle cx="8.5" cy="11.5" r="2"/><circle cx="15.5" cy="11.5" r="2"/><path d="M7 18.5l1.5-3h7l1.5 3"/>',
+  caixa:'<path d="M3 9h18v10H3z"/><path d="M3 9l2.2-4.5h13.6L21 9"/><path d="M9.5 13h5"/>',
+  busca:'<circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/>',
+  setlist:'<path d="M4 6.5h10M4 11.5h10M4 16.5h6"/><path d="M18 17V6.5l3 1"/><circle cx="16" cy="17.2" r="2"/>',
+  mais:'<circle cx="5" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="19" cy="12" r="1.5" fill="currentColor"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  camera:'<path d="M4 8.5h3l1.5-2.2h7L17 8.5h3V19H4z"/><circle cx="12" cy="13.5" r="3.4"/>',
+  img:'<rect x="3.5" y="4.5" width="17" height="15" rx="1.5"/><circle cx="9" cy="10" r="1.6"/><path d="M4 17l5-4.5 3.5 3 3-2.5L20 16"/>',
+  dado:'<rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.1" fill="currentColor"/><circle cx="15" cy="15" r="1.1" fill="currentColor"/><circle cx="12" cy="12" r="1.1" fill="currentColor"/>',
+  troca:'<path d="M20 11a8 8 0 1 0-2.4 5.7"/><path d="M20.5 4v7h-7"/>',
+  fechar:'<path d="M6 6l12 12M18 6L6 18"/>',
+  voltar:'<path d="M15 5l-7 7 7 7"/>',
+  lixo:'<path d="M5 7h14M10 7V4.5h4V7M7 7l1 12.5h8L17 7"/>',
+  editar:'<path d="M4 20l1-4L16.5 4.5l3 3L8 19z"/>',
+  copiar:'<rect x="8" y="8" width="12" height="12" rx="1.5"/><path d="M16 8V5.5A1.5 1.5 0 0 0 14.5 4h-9A1.5 1.5 0 0 0 4 5.5v9A1.5 1.5 0 0 0 5.5 16H8"/>',
+  enviar:'<path d="M12 15V4M7.5 8.5L12 4l4.5 4.5"/><path d="M5 13v6.5h14V13"/>',
+  salvar:'<path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4M8 20v-6h8v6"/>',
+  baixar:'<path d="M12 4v11M7.5 10.5L12 15l4.5-4.5"/><path d="M5 19.5h14"/>'
+};
+const ic = (n, s = 22) => `<svg class="i" viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[n] || ''}</svg>`;
+
+// leque art déco (cabeçalho e estado vazio)
+function fanSVG(w, h, rays, opacity) {
+  const cx = w / 2, cy = h + 6, L = Math.hypot(w, h) * 0.75;
+  let s = `<svg class="fan" viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMax slice" aria-hidden="true">`;
+  for (let i = 0; i <= rays; i++) {
+    const a = Math.PI + (Math.PI * i / rays);
+    s += `<line x1="${cx}" y1="${cy}" x2="${(cx + L * Math.cos(a)).toFixed(1)}" y2="${(cy + L * Math.sin(a)).toFixed(1)}" stroke="#d4af61" stroke-opacity="${i % 2 ? opacity * .55 : opacity}" stroke-width="1"/>`;
+  }
+  for (const r of [h * .38, h * .62, h * .86]) s += `<path d="M${cx - r} ${cy} A${r} ${r} 0 0 1 ${cx + r} ${cy}" fill="none" stroke="#8f6f2f" stroke-opacity=".75" stroke-width="1"/>`;
+  return s + '</svg>';
+}
+
+// ---------- armazenamento (IndexedDB) ----------
+const DB = (() => {
+  let db = null, broken = false;
+  const open = () => new Promise(res => {
+    try {
+      const r = indexedDB.open('garimpo', 1);
+      r.onupgradeneeded = () => { const d = r.result; d.createObjectStore('items', {keyPath:'id'}); d.createObjectStore('setlists', {keyPath:'id'}); };
+      r.onsuccess = () => { db = r.result; res(true); };
+      r.onerror = () => { broken = true; res(false); };
+    } catch (e) { broken = true; res(false); }
+  });
+  const run = (store, mode, fn) => new Promise((res, rej) => {
+    if (broken || !db) return res(mode === 'readonly' ? [] : undefined);
+    const t = db.transaction(store, mode); const req = fn(t.objectStore(store));
+    t.oncomplete = () => res(req && req.result);
+    t.onerror = () => rej(t.error);
+  });
+  return {
+    open,
+    get broken() { return broken; },
+    all: s => run(s, 'readonly', st => st.getAll()),
+    put: (s, v) => run(s, 'readwrite', st => st.put(v)),
+    del: (s, id) => run(s, 'readwrite', st => st.delete(id)),
+    clear: s => run(s, 'readwrite', st => st.clear())
+  };
+})();
+
+// ---------- estado ----------
+const state = {
+  items: [], setlists: [],
+  view: 'caixa',
+  fFormat: 'todos', sort: 'recentes',
+  q: '', sFormat: 'todos', sGenre: null,
+  sl: {genres: [], format: 'todos', count: 12, perAlbum: 2},
+  result: null, resultName: ''
+};
+let draft = null;       // item em edição
+let sheetOpen = false, pushed = false;
+let deferredInstall = null;
+
+// ---------- fotos ----------
+const urlCache = new Map();
+function photoURL(it) {
+  if (!it.photo) return null;
+  let u = urlCache.get(it.id);
+  if (!u || u.blob !== it.photo) {
+    if (u) URL.revokeObjectURL(u.url);
+    u = {blob: it.photo, url: URL.createObjectURL(it.photo)};
+    urlCache.set(it.id, u);
+  }
+  return u.url;
+}
+async function resizeImage(file, max = 900) {
+  let bmp;
+  try { bmp = await createImageBitmap(file, {imageOrientation: 'from-image'}); }
+  catch (e) {
+    bmp = await new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = URL.createObjectURL(file); });
+  }
+  const w = bmp.width || bmp.naturalWidth, h = bmp.height || bmp.naturalHeight;
+  const k = Math.min(1, max / Math.max(w, h));
+  const c = document.createElement('canvas'); c.width = Math.round(w * k); c.height = Math.round(h * k);
+  c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+  return new Promise(r => c.toBlob(b => r(b), 'image/jpeg', .82));
+}
+
+// ---------- faixas ----------
+function parseTracks(text) {
+  return String(text || '').split(/\r?\n/).map(l => l.trim()).filter(Boolean).map((l, i) => {
+    const m = l.match(/^(?:([A-Da-d]\d{1,2})[.)\-–:\s]+|(\d{1,3})\s*[.)\-–:]\s*)(.+)$/);
+    if (m) return {pos: (m[1] || m[2]).toUpperCase(), t: m[3].trim()};
+    return {pos: String(i + 1), t: l};
+  });
+}
+const tracksToText = tr => (tr || []).map(x => /^\d+$/.test(x.pos) ? `${x.pos}. ${x.t}` : `${x.pos} ${x.t}`).join('\n');
+
+// ---------- realce de busca ----------
+function hl(text, tokens) {
+  text = String(text ?? '');
+  if (!tokens.length) return esc(text);
+  let n = '', map = [];
+  for (let i = 0; i < text.length; i++) { const f = fold(text[i]); for (let k = 0; k < f.length; k++) { n += f[k]; map.push(i); } }
+  const flag = new Array(text.length).fill(false);
+  for (const tk of tokens) { let from = 0, idx; while ((idx = n.indexOf(tk, from)) > -1) { for (let k = idx; k < idx + tk.length; k++) flag[map[k]] = true; from = idx + tk.length; } }
+  let out = '', open = false;
+  for (let i = 0; i < text.length; i++) {
+    if (flag[i] && !open) { out += '<mark>'; open = true; }
+    if (!flag[i] && open) { out += '</mark>'; open = false; }
+    out += esc(text[i]);
+  }
+  return out + (open ? '</mark>' : '');
+}
+
+// ---------- componentes visuais ----------
+function cover(it) {
+  const f = FORMATS[it.format] || FORMATS.vinil, u = photoURL(it);
+  if (u) return `<div class="cover"><img src="${u}" alt="Capa de ${esc(it.album)}" loading="lazy"></div>`;
+  return `<div class="cover ph" style="--fc:${f.color}"><span class="ini">${esc((it.album || '?').trim().charAt(0).toUpperCase())}</span></div>`;
+}
+const chipRow = (active, action, withAll = true) =>
+  [withAll ? ['todos', 'Todos'] : null, ...Object.entries(FORMATS).map(([k, v]) => [k, v.name])].filter(Boolean)
+    .map(([k, n]) => `<button class="chip" data-a="${action}" data-v="${k}" aria-pressed="${active === k}">${k !== 'todos' ? ic(k, 16) : ''}${n}</button>`).join('');
+
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.hidden = false;
+  clearTimeout(toast.h); toast.h = setTimeout(() => t.hidden = true, 2400);
+}
+const allGenres = () => {
+  const cnt = {};
+  state.items.forEach(i => i.genres.forEach(g => cnt[g] = (cnt[g] || 0) + i.tracks.length));
+  return Object.entries(cnt).sort((a, b) => b[1] - a[1]);
+};
+
+// ---------- diálogos (substituem confirm/prompt do navegador) ----------
+function dialog({msg, input = null, ok = 'OK', danger = false}) {
+  return new Promise(res => {
+    const d = $('#dlg');
+    d.innerHTML = `<div class="box" role="alertdialog" aria-modal="true" aria-label="${esc(msg)}"><p>${esc(msg)}</p>
+      ${input !== null ? `<input id="dlgin" value="${esc(input)}" maxlength="80">` : ''}
+      <div class="acts"><button class="btn ${danger ? 'danger' : ''}" data-d="ok">${esc(ok)}</button><button class="btn ghost" data-d="no">Cancelar</button></div></div>`;
+    d.hidden = false;
+    const fin = v => { d.hidden = true; d.innerHTML = ''; d.onclick = null; res(v); };
+    d.onclick = e => {
+      const b = e.target.closest('[data-d]');
+      if (b && b.dataset.d === 'ok') fin(input !== null ? $('#dlgin').value : true);
+      else if (b || e.target === d) fin(input !== null ? null : false);
+    };
+    const i = $('#dlgin'); if (i) { i.focus(); i.select(); } else $('[data-d=ok]', d).focus();
+  });
+}
+
+// ---------- folhas ----------
+function openSheet(html) {
+  $('#panel').innerHTML = html; $('#sheet').hidden = false; $('#panel').scrollTop = 0;
+  if (!sheetOpen) { try { history.pushState({sheet: 1}, ''); pushed = true; } catch (e) { pushed = false; } sheetOpen = true; }
+  document.body.style.overflow = 'hidden';
+}
+function hideSheet() { $('#sheet').hidden = true; sheetOpen = false; pushed = false; document.body.style.overflow = ''; draft = null; }
+function closeSheet() { if (!sheetOpen) return; if (pushed) history.back(); else hideSheet(); }
+window.addEventListener('popstate', () => { if (sheetOpen) hideSheet(); });
+$('#sheet').addEventListener('click', e => { if (e.target.id === 'sheet') closeSheet(); });
+
+// =====================================================================
+// VISTAS
+// =====================================================================
+function emptyHTML() {
+  return `<div class="empty">${fanSVG(300, 150, 16, .55)}
+    <h2>Sua caixa está esperando</h2>
+    <p>Cada disco, CD ou fita que você garimpou merece um lugar no catálogo. Fotografe a capa, escaneie o código de barras ou busque pelo nome, e o Garimpo Sound traz o ano, as faixas e a capa.</p>
+    <div class="btnrow"><button class="btn" data-a="new">${ic('camera', 20)}Meu primeiro achado</button>
+    <button class="btn ghost" data-a="examples">Ver como fica, com exemplos</button></div></div>`;
+}
+
+function viewCaixa() {
+  const all = state.items, n = all.length;
+  let h = `<section class="pg"><h1>Minha caixa</h1>`;
+  if (!n) return h + emptyHTML() + '</section>';
+  const cnt = f => all.filter(i => i.format === f).length;
+  h += `<p class="sub">${n} ${n === 1 ? 'achado' : 'achados'}: ${cnt('vinil')} ${cnt('vinil') === 1 ? 'vinil' : 'vinis'}, ${cnt('cd')} ${cnt('cd') === 1 ? 'CD' : 'CDs'}, ${cnt('fita')} ${cnt('fita') === 1 ? 'fita' : 'fitas'}</p>`;
+  h += `<div class="bar"><div class="chips">${chipRow(state.fFormat, 'fformat')}</div>
+    <select class="sel" id="sort" aria-label="Ordenar por">${[['recentes','Mais recentes'],['artista','Artista'],['album','Álbum'],['ano','Ano']]
+      .map(([k, v]) => `<option value="${k}" ${state.sort === k ? 'selected' : ''}>${v}</option>`).join('')}</select></div>`;
+  let list = all.filter(i => state.fFormat === 'todos' || i.format === state.fFormat);
+  const by = {
+    recentes: (a, b) => b.createdAt - a.createdAt,
+    artista: (a, b) => norm(a.artist).localeCompare(norm(b.artist)) || (a.year || 0) - (b.year || 0),
+    album: (a, b) => norm(a.album).localeCompare(norm(b.album)),
+    ano: (a, b) => (a.year || 9999) - (b.year || 9999)
+  };
+  list.sort(by[state.sort]);
+  if (!list.length) return h + `<p class="note">Ainda não há ${FORMATS[state.fFormat].plural} na sua caixa. Que tal ir garimpar?</p></section>`;
+  h += `<div class="grid">${list.map(it => `
+    <button class="card" data-a="open" data-id="${esc(it.id)}" style="--fc:${FORMATS[it.format].color}">
+      <div class="top"><div class="frame">${cover(it)}</div>
+        <span class="fbadge" title="${FORMATS[it.format].name}">${ic(it.format, 16)}</span>
+        ${it.condition ? `<span class="sticker" title="Conservação">${esc(it.condition)}</span>` : ''}</div>
+      <div class="meta"><span class="al">${esc(it.album)}</span><span class="ar">${esc(it.artist)}</span>${it.year ? `<span class="yr">${it.year}</span>` : ''}</div>
+    </button>`).join('')}</div>`;
+  return h + '</section>';
+}
+
+function viewGarimpar() {
+  const gs = allGenres();
+  return `<section class="pg"><h1>Garimpar</h1>
+    <p class="sub">Digite uma música, um álbum ou um artista e descubra em qual disco, lado e prateleira ela está guardada.</p>
+    <div class="search">${ic('busca', 22)}<input id="q" type="search" placeholder="Ex.: Blue in Green" value="${esc(state.q)}" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="search" aria-label="Buscar no acervo"></div>
+    <div class="chips scroll">${chipRow(state.sFormat, 'sformat')}</div>
+    ${gs.length ? `<div class="chips scroll">${gs.map(([g]) => `<button class="chip" data-a="sgenre" data-v="${esc(g)}" aria-pressed="${state.sGenre === g}">${esc(g)}</button>`).join('')}</div>` : ''}
+    <div id="results"></div></section>`;
+}
+
+function itemMatchesFilters(i) {
+  return (state.sFormat === 'todos' || i.format === state.sFormat) && (!state.sGenre || i.genres.includes(state.sGenre));
+}
+function albumRow(it, tokens) {
+  const f = FORMATS[it.format];
+  return `<button class="row" data-a="open" data-id="${esc(it.id)}" style="--fc:${f.color}">
+    <div class="th"><div class="frame">${cover(it)}</div></div>
+    <div class="tx"><span class="t1">${hl(it.album, tokens)}</span><span class="t2">${hl(it.artist, tokens)}${it.year ? ', ' + it.year : ''}</span></div>
+    <div class="end">${ic(it.format, 18)}<span>${f.name}${it.location ? '' : ''}</span></div></button>`;
+}
+function renderResults() {
+  const el = $('#results'); if (!el) return;
+  if (!state.items.length) { el.innerHTML = emptyHTML(); return; }
+  const tokens = norm(state.q).split(/\s+/).filter(Boolean);
+  const items = state.items.filter(itemMatchesFilters);
+  const filtering = state.sFormat !== 'todos' || state.sGenre;
+
+  if (!tokens.length) {
+    const nt = state.items.reduce((a, i) => a + i.tracks.length, 0);
+    let h = `<p class="note">Sua biblioteca já tem ${nt} ${nt === 1 ? 'música' : 'músicas'} em ${state.items.length} ${state.items.length === 1 ? 'achado' : 'achados'}. O que vamos procurar?</p>
+      <div class="dice"><button class="btn ghost" data-a="rand">${ic('dado', 20)}Surpreenda-me: puxar um disco da caixa</button></div>`;
+    if (filtering) h += `<h2>${items.length} ${items.length === 1 ? 'achado' : 'achados'} nesse filtro</h2>` + (items.map(i => albumRow(i, [])).join('') || '<p class="note">Nada por aqui ainda.</p>');
+    el.innerHTML = h; return;
+  }
+
+  const hit = (hay, tks) => tks.every(t => hay.includes(t));
+  const albums = items.filter(i => hit(norm([i.album, i.artist, i.year, i.genres.join(' '), i.location].join(' ')), tokens));
+  const artistMap = new Map();
+  items.forEach(i => { if (hit(norm(i.artist), tokens)) artistMap.set(i.artist, (artistMap.get(i.artist) || 0) + 1); });
+  const tracks = [];
+  items.forEach(i => i.tracks.forEach((tr, idx) => {
+    const hay = tokens.length > 1 ? norm(tr.t + ' ' + i.artist + ' ' + i.album) : norm(tr.t);
+    if (hit(hay, tokens)) tracks.push({i, tr, idx});
+  }));
+
+  if (!albums.length && !artistMap.size && !tracks.length) {
+    el.innerHTML = `<p class="note">Não encontrei “${esc(state.q)}” na sua caixa. Confira a grafia ou tire os filtros. Se esse disco ainda não foi catalogado, é só registrar o achado.</p>`; return;
+  }
+  let h = '';
+  if (artistMap.size) h += `<h2>Artistas</h2>` + [...artistMap].map(([a, c]) =>
+    `<button class="row" data-a="setq" data-v="${esc(a)}"><div class="tx"><span class="t1">${hl(a, tokens)}</span><span class="t2">${c} ${c === 1 ? 'achado' : 'achados'} na sua caixa</span></div></button>`).join('');
+  if (albums.length) h += `<h2>Álbuns</h2>` + albums.map(i => albumRow(i, tokens)).join('');
+  if (tracks.length) {
+    h += `<h2>Músicas</h2>` + tracks.slice(0, 80).map(({i, tr, idx}) => `
+      <button class="row" data-a="open" data-id="${esc(i.id)}" data-hl="${idx}" style="--fc:${FORMATS[i.format].color}">
+        <div class="tx"><span class="t1">${hl(tr.t, tokens)}</span><span class="t2">${esc(i.artist)}, ${esc(i.album)}</span></div>
+        <div class="end">${ic(i.format, 18)}<span><span class="pos">${esc(tr.pos)}</span>${i.location ? ' · ' + esc(i.location) : ''}</span></div></button>`).join('');
+    if (tracks.length > 80) h += `<p class="note">Mostrando 80 de ${tracks.length} músicas. Digite mais um pedaço do nome para afinar a busca.</p>`;
+  }
+  el.innerHTML = h;
+}
+
+// ---------- setlist ----------
+function viewSetlist() {
+  const gs = allGenres(), s = state.sl;
+  let h = `<section class="pg"><h1>Setlist</h1><p class="sub">Escolha os gêneros e o Garimpo Sound sorteia músicas da sua coleção, dizendo de qual disco tirar cada uma.</p>`;
+  if (!state.items.length) return h + emptyHTML() + '</section>';
+  h += `<div class="panel-box">
+    <div><span class="lbl">Gêneros ${gs.length ? '(sem escolher, vale a coleção toda)' : ''}</span>
+      ${gs.length ? `<div class="chips">${gs.map(([g, c]) => `<button class="chip" data-a="slgenre" data-v="${esc(g)}" aria-pressed="${s.genres.includes(g)}">${esc(g)} <small>${c}</small></button>`).join('')}</div>`
+        : `<p class="note">Marque os gêneros nos seus achados para montar setlists por estilo. Por enquanto, o sorteio usa a coleção toda.</p>`}</div>
+    <div><span class="lbl">Formato</span><div class="chips">${chipRow(s.format, 'slformat')}</div></div>
+    <div><span class="lbl">Quantidade: <span class="cnt" id="cnt">${s.count}</span> músicas</span><input type="range" id="slcount" min="3" max="40" value="${s.count}" aria-label="Quantidade de músicas"></div>
+    <div><label class="lbl" for="slper">Máximo de músicas por álbum</label>
+      <select class="sel" id="slper">${[[1,'1'],[2,'2'],[3,'3'],[0,'Sem limite']].map(([v, n]) => `<option value="${v}" ${s.perAlbum === v ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
+    <button class="btn" data-a="gen">${ic('dado', 20)}Montar setlist</button></div>
+    <div id="setresult">${setResultHTML()}</div>`;
+  if (state.setlists.length) {
+    h += `<h2>Setlists salvas</h2>` + state.setlists.sort((a, b) => b.createdAt - a.createdAt).map(l => `
+      <div class="row"><button class="tx" style="text-align:left" data-a="loadset" data-id="${esc(l.id)}"><span class="t1">${esc(l.name)}</span>
+        <span class="t2">${l.entries.length} músicas, ${new Date(l.createdAt).toLocaleDateString('pt-BR')}</span></button>
+        <button class="icon sm" data-a="delset" data-id="${esc(l.id)}" aria-label="Apagar setlist ${esc(l.name)}">${ic('lixo', 20)}</button></div>`).join('');
+  }
+  return h + '</section>';
+}
+function setResultHTML() {
+  const r = state.result; if (!r) return '';
+  if (!r.length) return `<p class="note">Não achei músicas com esses filtros. Escolha outros gêneros ou complete as faixas dos seus achados.</p>`;
+  const items = [...new Map(r.map(e => [e.itemId, state.items.find(i => i.id === e.itemId)]).filter(([, v]) => v)).values()];
+  const want = state.sl.count;
+  return `<h2>${esc(state.resultName || 'Sua setlist')}</h2>
+    ${r.length < want && !state.resultName ? `<p class="note">Encontrei só ${r.length} ${r.length === 1 ? 'música' : 'músicas'} com esses filtros. Registre mais faixas ou amplie os gêneros para completar.</p>` : ''}
+    <ol class="set">${r.map((e, i) => `<li style="--fc:${FORMATS[e.format]?.color || '#d4af61'}">
+      <span class="n">${i + 1}</span>
+      <div class="tx"><span class="t1">${esc(e.t)}</span><span class="t2">${esc(e.artist)}, ${esc(e.album)}</span>
+        <span class="loc">${esc(FORMATS[e.format]?.name || '')}, ${esc(e.pos)}${e.loc ? ', ' + esc(e.loc) : ''}</span></div>
+      <button class="icon sm" data-a="swap" data-i="${i}" aria-label="Trocar música ${i + 1}">${ic('troca', 20)}</button>
+      <button class="icon sm" data-a="rmtrack" data-i="${i}" aria-label="Remover música ${i + 1}">${ic('fechar', 20)}</button></li>`).join('')}</ol>
+    ${items.length ? `<h2>Separe da caixa</h2><div class="pull">${items.map(it => `<button class="mini" data-a="open" data-id="${esc(it.id)}" style="--fc:${FORMATS[it.format].color}"><div class="frame">${cover(it)}</div><span>${esc(it.album)}</span></button>`).join('')}</div>` : ''}
+    <div class="acts"><button class="btn ghost" data-a="copyset">${ic('copiar', 18)}Copiar</button>
+      ${navigator.share ? `<button class="btn ghost" data-a="shareset">${ic('enviar', 18)}Compartilhar</button>` : ''}
+      <button class="btn ghost" data-a="saveset">${ic('salvar', 18)}Salvar</button></div>`;
+}
+function buildPool() {
+  const s = state.sl, pool = [];
+  state.items.forEach(it => {
+    if (s.format !== 'todos' && it.format !== s.format) return;
+    if (s.genres.length && !it.genres.some(g => s.genres.includes(g))) return;
+    it.tracks.forEach((tr, idx) => pool.push(entryOf(it, idx)));
+  });
+  return pool;
+}
+const entryOf = (it, idx) => ({key: it.id + ':' + idx, itemId: it.id, t: it.tracks[idx].t, pos: it.tracks[idx].pos, artist: it.artist, album: it.album, format: it.format, loc: it.location || ''});
+function spreadArtists(list) {
+  const rest = list.slice(), out = [];
+  while (rest.length) {
+    const last = out.length ? out[out.length - 1].artist : null;
+    let k = rest.findIndex(e => e.artist !== last); if (k < 0) k = 0;
+    out.push(rest.splice(k, 1)[0]);
+  }
+  return out;
+}
+function genSetlist() {
+  const s = state.sl, pool = shuffle(buildPool()), out = [], per = {};
+  for (const e of pool) {
+    if (out.length >= s.count) break;
+    if (s.perAlbum && (per[e.itemId] || 0) >= s.perAlbum) continue;
+    out.push(e); per[e.itemId] = (per[e.itemId] || 0) + 1;
+  }
+  state.result = spreadArtists(out); state.resultName = '';
+}
+const setAsText = () => {
+  const s = state.sl, g = state.resultName || ('Setlist' + (s.genres.length ? ' de ' + s.genres.join(', ') : ''));
+  return `${g}\n\n` + state.result.map((e, i) => `${i + 1}. ${e.t} — ${e.artist} (${e.album}, ${FORMATS[e.format]?.name || ''} ${e.pos}${e.loc ? ', ' + e.loc : ''})`).join('\n');
+};
+
+// ---------- detalhe ----------
+function openDetail(id, hlIdx) {
+  const it = state.items.find(x => x.id === id); if (!it) return;
+  const f = FORMATS[it.format];
+  let lastSide = '', trk = '';
+  it.tracks.forEach((tr, i) => {
+    const side = /^[A-D]/.test(tr.pos) ? tr.pos[0] : '';
+    if (side && side !== lastSide) { trk += `<li class="side">Lado ${side}</li>`; lastSide = side; }
+    trk += `<li ${hlIdx === i ? 'class="hl" id="hlrow"' : ''}><span class="pos">${esc(tr.pos)}</span><span>${esc(tr.t)}</span></li>`;
+  });
+  openSheet(`
+    <div class="shtop"><button class="icon" data-a="close" aria-label="Voltar">${ic('voltar')}</button><h2>${f.name}</h2><span></span></div>
+    <div class="shbody" style="--fc:${f.color}">
+      <div class="hero"><div class="frame">${cover(it)}</div>
+        <div class="ttl"><h1>${esc(it.album)}</h1><span class="by">${esc(it.artist)}</span>
+          ${it.value != null ? `<div style="margin-top:8px"><span class="tag">${brl(it.value)}</span></div>` : ''}</div></div>
+      <div class="facts">
+        <div><small>Formato</small><b>${f.name}</b></div>
+        <div><small>Ano</small><b>${it.year || '—'}</b></div>
+        <div><small>Conservação</small><b>${it.condition ? esc(it.condition) + ', ' + esc((CONDS.find(c => c[0] === it.condition) || [])[1] || '') : '—'}</b></div>
+        <div><small>Onde está guardado</small><b>${esc(it.location) || '—'}</b></div>
+      </div>
+      ${it.genres.length ? `<div class="chips" style="margin-bottom:8px">${it.genres.map(g => `<span class="chip">${esc(g)}</span>`).join('')}</div>` : ''}
+      ${it.tracks.length ? `<h2 style="font-family:var(--disp);font-weight:400;font-size:18px;color:var(--gold);margin:22px 0 4px">Faixas (${it.tracks.length})</h2><ul class="tracks">${trk}</ul>` : `<p class="note" style="margin-top:20px">Ainda sem faixas registradas. Toque em Editar para completar o repertório deste achado.</p>`}
+      ${it.notes ? `<h2 style="font-family:var(--disp);font-weight:400;font-size:18px;color:var(--gold);margin:22px 0 6px">Anotações do garimpo</h2><p style="white-space:pre-wrap">${esc(it.notes)}</p>` : ''}
+      <div class="acts"><button class="btn" data-a="edit" data-id="${esc(it.id)}">${ic('editar', 18)}Editar</button>
+        <button class="btn danger" data-a="delete" data-id="${esc(it.id)}">${ic('lixo', 18)}Remover</button></div>
+    </div>`);
+  if (hlIdx != null) setTimeout(() => { const r = $('#hlrow'); if (r) r.scrollIntoView({block: 'center'}); }, 60);
+}
+
+// ---------- formulário ----------
+function genreChipsHTML(selected, extra = []) {
+  const set = new Set([...BASE_GENRES, ...allGenres().map(g => g[0]), ...extra, ...selected]);
+  return [...set].map(g => `<button type="button" class="chip" data-a="fgenre" data-v="${esc(g)}" aria-pressed="${selected.includes(g)}">${esc(g)}</button>`).join('');
+}
+function photoAreaHTML() {
+  const has = draft.photo;
+  const url = has ? URL.createObjectURL(draft.photo) : null;
+  if (draft._url) URL.revokeObjectURL(draft._url);
+  draft._url = url;
+  return `<div class="frame">${has ? `<div class="cover"><img src="${url}" alt="Foto escolhida"></div>` : `<div class="drop">Fotografe a capa do seu achado. A foto fica guardada só neste aparelho.</div>`}</div>
+    <div class="btnrow">
+      <label class="btn">${ic('camera', 20)}Fotografar<input class="vh" type="file" accept="image/*" capture="environment" data-in="photo"></label>
+      <label class="btn ghost">${ic('img', 20)}Galeria<input class="vh" type="file" accept="image/*" data-in="photo"></label>
+      ${has ? `<button type="button" class="btn ghost" data-a="rmphoto">Remover foto</button>` : ''}</div>`;
+}
+function openForm(it) {
+  draft = it ? {...it, genres: [...it.genres]} : {format: 'vinil', genres: [], photo: null, tracks: []};
+  const d = draft;
+  openSheet(`
+    <div class="shtop"><button class="icon" data-a="close" aria-label="Fechar">${ic('fechar')}</button><h2>${d.id ? 'Editar achado' : 'Registrar achado'}</h2><span></span></div>
+    <form class="shbody" id="f" novalidate autocomplete="off">
+      <div class="photo" id="photoArea">${photoAreaHTML()}</div>
+      <div class="fld"><span class="lbl">Formato</span><div class="seg" id="seg">
+        ${Object.entries(FORMATS).map(([k, v]) => `<button type="button" data-a="fmt" data-v="${k}" style="--fc:${v.color}" aria-pressed="${d.format === k}">${ic(k, 26)}${v.name}</button>`).join('')}</div></div>
+      <div class="fld"><label for="f-artist">Artista</label><input id="f-artist" name="artist" required value="${esc(d.artist)}" autocapitalize="words"></div>
+      <div class="fld"><label for="f-album">Álbum</label><input id="f-album" name="album" required value="${esc(d.album)}" autocapitalize="words"></div>
+      <div class="auto" id="auto">
+        <h3>${ic('busca', 20)}Preencher pela internet</h3>
+        <p class="hint">Digite o artista e/ou o álbum acima e busque pelo nome. Ou use o código de barras, na traseira da capa.</p>
+        <button type="button" class="btn" data-a="mbsearch">${ic('busca', 18)}Buscar pelo nome</button>
+        <div class="bc"><input id="f-bc" inputmode="numeric" maxlength="14" placeholder="Cód. de barras" aria-label="Código de barras" autocomplete="off">
+          <button type="button" class="btn ghost" data-a="bcsearch">Buscar</button>
+          ${HAS_BD ? `<button type="button" class="btn ghost" data-a="bcscan" aria-label="Escanear código de barras com a câmera" title="Escanear">${ic('camera', 20)}</button>` : ''}</div>
+        ${HAS_BD ? '' : '<p class="hint">Este navegador não escaneia códigos de barras: digite os números. No Chrome do Android o escaneamento funciona.</p>'}
+        <div id="mbres" aria-live="polite"></div>
+        <p class="hint">Dados do MusicBrainz e capas do Cover Art Archive, projetos abertos. Só o texto ou o código buscado sai do seu aparelho; sua coleção continua só aqui.</p>
+      </div>
+      <div class="two">
+        <div class="fld"><label for="f-year">Ano</label><input id="f-year" name="year" type="number" inputmode="numeric" min="1900" max="2100" value="${d.year || ''}"></div>
+        <div class="fld"><label for="f-value">Valor estimado (R$)</label><input id="f-value" name="value" inputmode="decimal" value="${d.value != null ? String(d.value).replace('.', ',') : ''}"></div>
+      </div>
+      <div class="fld"><span class="lbl">Gêneros</span><div class="chips" id="gbox">${genreChipsHTML(d.genres)}</div>
+        <div class="addg"><input id="g-new" placeholder="Outro gênero" aria-label="Adicionar outro gênero"><button type="button" class="btn ghost" data-a="addg">Adicionar</button></div></div>
+      <div>
+        <div class="fld"><label for="f-cond">Conservação</label><select id="f-cond" name="condition"><option value="">—</option>
+          ${CONDS.map(([c, n]) => `<option value="${c}" ${d.condition === c ? 'selected' : ''}>${c}, ${n}</option>`).join('')}</select></div>
+        <div class="fld"><label for="f-loc">Onde está guardado</label><input id="f-loc" name="location" placeholder="Ex.: Caixa A" value="${esc(d.location)}"></div>
+      </div>
+      <div class="fld"><label for="f-tracks">Faixas</label><textarea id="f-tracks" name="tracks" placeholder="Uma música por linha">${esc(tracksToText(d.tracks))}</textarea>
+        <span class="hint">Uma música por linha. No vinil e na fita, comece com o lado e a posição (A1, A2, B1…). No CD, use 1., 2., 3. ou deixe sem número.</span></div>
+      <div class="fld"><label for="f-notes">Anotações do garimpo</label><textarea id="f-notes" name="notes" style="min-height:90px" placeholder="Onde achou, a história do disco, detalhes da prensagem…">${esc(d.notes)}</textarea></div>
+      <div class="acts"><button class="btn" type="submit">${ic('salvar', 18)}Guardar na caixa</button><button type="button" class="btn ghost" data-a="close">Cancelar</button></div>
+    </form>`);
+}
+async function saveForm(form) {
+  const fd = new FormData(form), d = draft;
+  const artist = (fd.get('artist') || '').trim(), album = (fd.get('album') || '').trim();
+  if (!artist || !album) { toast('Faltou o artista ou o álbum. Eles ajudam a achar o disco depois.'); (artist ? $('#f-album') : $('#f-artist')).focus(); return; }
+  const v = String(fd.get('value') || '').replace(/\./g, '').replace(',', '.').trim();
+  const it = {
+    id: d.id || uid(), createdAt: d.createdAt || Date.now(), updatedAt: Date.now(),
+    format: d.format, artist, album,
+    year: parseInt(fd.get('year')) || null,
+    genres: d.genres, condition: fd.get('condition') || '',
+    value: v !== '' && !isNaN(parseFloat(v)) ? parseFloat(v) : null,
+    location: (fd.get('location') || '').trim(), notes: (fd.get('notes') || '').trim(),
+    tracks: parseTracks(fd.get('tracks')), photo: d.photo || null, example: !!d.example
+  };
+  try { await DB.put('items', it); } catch (e) { toast('Não consegui guardar no aparelho. Confira o espaço livre e tente de novo.'); return; }
+  const k = state.items.findIndex(x => x.id === it.id);
+  if (k >= 0) state.items[k] = it; else state.items.push(it);
+  toast('Achado guardado na sua caixa'); render(); openDetail(it.id);
+  const n = state.items.length;
+  if (k < 0 && n >= 5 && n % 5 === 0 && Date.now() - (+LS.get('gs-backup') || 0) > 14 * 864e5)
+    setTimeout(() => toast(`Já são ${n} achados! Que tal fazer uma cópia de segurança? Ela fica em Mais.`), 2700);
+}
+
+// ---------- menu ----------
+function openMenu() {
+  const n = state.items.length, tr = state.items.reduce((a, i) => a + i.tracks.length, 0), val = state.items.reduce((a, i) => a + (i.value || 0), 0);
+  const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const hasEx = state.items.some(i => i.example);
+  openSheet(`
+    <div class="shtop"><button class="icon" data-a="close" aria-label="Fechar">${ic('fechar')}</button><h2>Mais</h2><span></span></div>
+    <div class="shbody">
+      <div class="stat"><div><b>${n}</b><small>achados</small></div><div><b>${tr}</b><small>músicas</small></div><div><b>${brl(val)}</b><small>valor estimado</small></div></div>
+      <div class="menu-list">
+        ${deferredInstall && !standalone ? `<button class="btn" data-a="install">${ic('baixar', 18)}Instalar o app</button>` : ''}
+        <button class="btn ghost" data-a="export">${ic('enviar', 18)}Exportar cópia de segurança</button>
+        <button class="btn ghost" data-a="import">${ic('baixar', 18)}Importar cópia de segurança</button>
+        ${hasEx ? `<button class="btn ghost" data-a="rmexamples">Remover itens de exemplo</button>` : (!n ? `<button class="btn ghost" data-a="examples">Carregar itens de exemplo</button>` : '')}
+        ${n ? `<button class="btn danger" data-a="wipe">${ic('lixo', 18)}Apagar todo o acervo</button>` : ''}
+      </div>
+      <input class="vh" type="file" accept="application/json,.json" id="importFile">
+      ${ios && !standalone ? `<p class="fine">No iPhone/iPad: toque em Compartilhar no Safari e depois em “Adicionar à Tela de Início” para instalar.</p>` : ''}
+      <p class="fine">Sua coleção mora só neste aparelho, sem nuvem. Faça uma cópia de segurança de tempos em tempos, principalmente antes de trocar de celular ou limpar os dados do navegador: é ela que protege anos de garimpo.${DB.broken ? ' <b>Atenção: este navegador não permite guardar dados (aba anônima?). O que você registrar será perdido ao fechar.</b>' : ''}</p>
+    </div>`);
+}
+
+// ---------- backup (com validação rigorosa do arquivo importado) ----------
+const str = (v, n = 200) => typeof v === 'string' ? v.slice(0, n) : (typeof v === 'number' && isFinite(v) ? String(v) : '');
+const safeId = v => (typeof v === 'string' && /^[\w-]{1,48}$/.test(v)) ? v : uid();
+const hasFmt = f => typeof f === 'string' && Object.prototype.hasOwnProperty.call(FORMATS, f);
+function dataURLToBlob(u) {
+  if (typeof u !== 'string' || u.length > 8e6) return null;
+  const m = /^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/.exec(u);
+  if (!m) return null;
+  try { const bin = atob(m[2]), a = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i); return new Blob([a], {type: m[1]}); }
+  catch (e) { return null; }
+}
+function cleanItem(r) {
+  if (!r || typeof r !== 'object') return null;
+  const artist = str(r.artist, 150).trim(), album = str(r.album, 150).trim();
+  if (!artist || !album) return null;
+  const tracks = (Array.isArray(r.tracks) ? r.tracks : []).slice(0, 300).map(t => ({pos: str(t && t.pos, 6) || '?', t: str(t && t.t, 200).trim()})).filter(t => t.t);
+  const genres = (Array.isArray(r.genres) ? r.genres : []).slice(0, 20).map(g => str(g, 30).trim()).filter(Boolean);
+  return {
+    id: safeId(r.id), createdAt: Number.isFinite(r.createdAt) ? r.createdAt : Date.now(), updatedAt: Date.now(),
+    format: hasFmt(r.format) ? r.format : 'vinil', artist, album,
+    year: Number.isInteger(r.year) && r.year >= 1800 && r.year <= 2200 ? r.year : null,
+    genres, condition: CONDS.some(c => c[0] === r.condition) ? r.condition : '',
+    value: typeof r.value === 'number' && isFinite(r.value) && r.value >= 0 && r.value < 1e9 ? r.value : null,
+    location: str(r.location, 100).trim(), notes: str(r.notes, 2000).trim(), tracks,
+    photo: dataURLToBlob(r.photo), example: r.example === true
+  };
+}
+function cleanSetlist(l) {
+  if (!l || typeof l !== 'object' || !Array.isArray(l.entries)) return null;
+  const entries = l.entries.slice(0, 100).map(e => ({
+    key: str(e && e.key, 80), itemId: str(e && e.itemId, 60), t: str(e && e.t, 200), pos: str(e && e.pos, 6),
+    artist: str(e && e.artist, 150), album: str(e && e.album, 150), format: hasFmt(e && e.format) ? e.format : 'vinil', loc: str(e && e.loc, 100)
+  })).filter(e => e.t);
+  return {id: safeId(l.id), name: str(l.name, 80).trim() || 'Setlist', createdAt: Number.isFinite(l.createdAt) ? l.createdAt : Date.now(), entries};
+}
+
+// ---------- backup ----------
+const blobToDataURL = b => new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(b); });
+async function exportBackup() {
+  const items = await Promise.all(state.items.map(async i => ({...i, photo: i.photo ? await blobToDataURL(i.photo) : null})));
+  const json = JSON.stringify({app: 'garimpo', v: 1, exportedAt: new Date().toISOString(), items, setlists: state.setlists}, null, 1);
+  const name = `garimpo-sound-backup-${new Date().toISOString().slice(0, 10)}.json`;
+  const file = new File([json], name, {type: 'application/json'});
+  try {
+    if (navigator.canShare && navigator.canShare({files: [file]})) { await navigator.share({files: [file], title: 'Backup do Garimpo Sound'}); LS.set('gs-backup', Date.now()); toast('Cópia de segurança pronta'); return; }
+  } catch (e) { if (e.name === 'AbortError') return; }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  LS.set('gs-backup', Date.now()); toast('Cópia de segurança pronta. Guarde o arquivo no Drive ou no e-mail.');
+}
+async function importBackup(file) {
+  try {
+    if (file.size > 150e6) throw new Error('grande');
+    const data = JSON.parse(await file.text());
+    if (!data || data.app !== 'garimpo' || !Array.isArray(data.items)) throw new Error('formato');
+    const items = data.items.slice(0, 5000).map(cleanItem).filter(Boolean);
+    const lists = (Array.isArray(data.setlists) ? data.setlists : []).slice(0, 200).map(cleanSetlist).filter(Boolean);
+    if (!items.length && !lists.length) throw new Error('vazio');
+    if (!(await dialog({msg: `Importar ${items.length} ${items.length === 1 ? 'achado' : 'achados'} desta cópia? Registros com o mesmo código serão atualizados.`, ok: 'Importar'}))) return;
+    for (const it of items) {
+      await DB.put('items', it);
+      const k = state.items.findIndex(x => x.id === it.id); if (k >= 0) state.items[k] = it; else state.items.push(it);
+    }
+    for (const l of lists) { await DB.put('setlists', l); const k = state.setlists.findIndex(x => x.id === l.id); if (k >= 0) state.setlists[k] = l; else state.setlists.push(l); }
+    toast('Cópia restaurada. Bem-vindo de volta à sua caixa!'); closeSheet(); render();
+  } catch (e) { toast('Esse arquivo não parece ser uma cópia do Garimpo Sound. Escolha o arquivo que você exportou.'); }
+}
+
+// ---------- identificação automática (MusicBrainz + Cover Art Archive) ----------
+const HAS_BD = 'BarcodeDetector' in window;
+let lastMB = 0, mbList = [], scanStream = null, scanTimer = null;
+
+// o MusicBrainz pede no máximo ~1 consulta por segundo
+let mbChain = Promise.resolve();   // fila: garante uma consulta por vez, mesmo com cliques repetidos
+function mb(path) { const run = mbChain.then(() => mbRaw(path)); mbChain = run.catch(() => {}); return run; }
+async function mbRaw(path) {
+  const wait = Math.max(0, lastMB + 1200 - Date.now());
+  if (wait) await new Promise(r => setTimeout(r, wait));
+  lastMB = Date.now();
+  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 15000);
+  try {
+    const r = await fetch('https://musicbrainz.org/ws/2/' + path + (path.includes('?') ? '&' : '?') + 'fmt=json', {signal: ctl.signal, credentials: 'omit', referrerPolicy: 'no-referrer'});
+    if (!r.ok) throw new Error(r.status === 503 || r.status === 429 ? 'limite' : 'http');
+    return await r.json();
+  } finally { clearTimeout(t); }
+}
+const lq = s => String(s || '').replace(/[+\-&|!(){}\[\]^"~*?:\\\/]/g, ' ').replace(/\s+/g, ' ').trim();
+const lqField = (f, s) => `${f}:(${s.split(' ').join(' AND ')})`;
+const acName = ac => (ac || []).map(a => (a.name || (a.artist && a.artist.name) || '') + (a.joinphrase || '')).join('').trim();
+function mbFormat(media) {
+  const f = (media || []).map(m => m.format || '').join(' ');
+  if (/cassette/i.test(f)) return 'fita';
+  if (/vinyl/i.test(f)) return 'vinil';
+  if (/cd/i.test(f)) return 'cd';
+  return null;
+}
+const GMAP = [[/bossa/i,'Bossa Nova'],[/samba|pagode/i,'Samba'],[/\bmpb\b|brazilian popular/i,'MPB'],[/forr[oó]/i,'Forró'],[/hip.?hop|\brap\b/i,'Hip hop'],
+  [/electro|house|techno|ambient|trance/i,'Eletrônica'],[/classical|opera|baroque/i,'Clássica'],[/metal/i,'Metal'],[/punk/i,'Punk'],[/rock/i,'Rock'],
+  [/jazz|bebop/i,'Jazz'],[/blues/i,'Blues'],[/soul|r&b|rhythm and blues/i,'Soul'],[/funk/i,'Funk'],[/disco/i,'Disco'],[/reggae|\bska\b/i,'Reggae'],
+  [/country/i,'Country'],[/folk/i,'Folk'],[/gospel/i,'Gospel'],[/pop/i,'Pop']];
+function mapGenres(names) {
+  const out = [];
+  for (const n of names) {
+    const hit = GMAP.find(([re]) => re.test(n));
+    const g = hit ? hit[1] : n.charAt(0).toUpperCase() + n.slice(1);
+    if (!out.includes(g)) out.push(g);
+    if (out.length >= 4) break;
+  }
+  return out;
+}
+function mbTracks(media) {
+  const out = []; let n = 0;
+  (media || []).forEach(m => (m.tracks || []).forEach(t => {
+    n++;
+    const num = String(t.number || '');
+    const pos = /^[A-Da-d]\d{1,2}$/.test(num) ? num.toUpperCase() : String(n);
+    const title = String(t.title || (t.recording && t.recording.title) || '').trim();
+    if (title) out.push({pos, t: title.slice(0, 200)});
+  }));
+  return out.slice(0, 300);
+}
+const mbMsg = html => { const b = $('#mbres'); if (b) b.innerHTML = html; };
+function mbRender() {
+  if (!mbList.length) return mbMsg('<p class="note">Não encontrei esse disco na base. Tente só o nome do artista, outra grafia ou o código de barras. Discos raros às vezes não estão lá: nesse caso, é só preencher à mão.</p>');
+  mbMsg(`<span class="lbl">${mbList.length} ${mbList.length === 1 ? 'edição encontrada' : 'edições encontradas'}. Toque na que for igual à sua:</span>` +
+    mbList.map((r, i) => `<button type="button" class="row" data-a="mbpick" data-i="${i}" style="--fc:${r.fmt ? FORMATS[r.fmt].color : 'var(--gold)'}">
+      <div class="tx"><span class="t1">${esc(r.title)}</span><span class="t2">${esc([r.artist, r.date, r.country, r.label].filter(Boolean).join(', '))}</span></div>
+      <div class="end">${r.fmt ? ic(r.fmt, 18) : ''}<span>${r.n ? r.n + ' faixas' : ''}</span></div></button>`).join(''));
+}
+async function mbSearch(query, auto = false) {
+  if (!navigator.onLine) return mbMsg('<p class="note">Sem internet no momento. Você pode preencher à mão e buscar depois, quando estiver online.</p>');
+  mbMsg('<p class="note">Procurando seu disco…</p>');
+  try {
+    const data = await mb(`release/?query=${encodeURIComponent(query)}&limit=20`);
+    const pref = draft && draft.format;
+    mbList = (data.releases || []).map(r => ({
+      id: r.id, rg: r['release-group'] && r['release-group'].id, title: r.title || '', artist: acName(r['artist-credit']),
+      date: String(r.date || '').slice(0, 4), country: r.country || '',
+      label: ((r['label-info'] || []).map(l => l.label && l.label.name).filter(Boolean)[0]) || '',
+      fmt: mbFormat(r.media), n: r['track-count'] || 0, score: r.score || 0
+    })).filter(r => r.id && r.title);
+    mbList.sort((a, b) => ((b.fmt === pref) - (a.fmt === pref)) || b.score - a.score);
+    mbList = mbList.slice(0, 12);
+    if (auto && mbList.length === 1) return mbPick(0);
+    mbRender();
+  } catch (e) {
+    mbMsg(`<p class="note">${e.message === 'limite' ? 'A base pediu uma pausa. Espere alguns segundos e tente de novo.' : 'A internet falhou agora. Tente de novo ou preencha à mão.'}</p>`);
+  }
+}
+async function bcSearch(raw) {
+  const code = String(raw || '').replace(/\D/g, '');
+  if (!/^\d{8,14}$/.test(code)) return toast('O código de barras tem de 8 a 14 números. Confira e tente de novo.');
+  const v = [code]; if (code.length === 12) v.push('0' + code); if (code.length === 13 && code[0] === '0') v.push(code.slice(1));
+  await mbSearch(`barcode:(${v.join(' OR ')})`, true);
+}
+async function fetchCover(id) {
+  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 12000);
+  try {
+    const r = await fetch(`https://coverartarchive.org/release/${encodeURIComponent(id)}/front-500`, {signal: ctl.signal, credentials: 'omit', referrerPolicy: 'no-referrer'});
+    if (!r.ok) return null;
+    const b = await r.blob();
+    return /^image\//.test(b.type) && b.size < 3e6 ? b : null;
+  } catch (e) { return null; } finally { clearTimeout(t); }
+}
+function addGenre(g) {
+  g = String(g || '').trim().slice(0, 30); if (!g) return;
+  const ex = [...document.querySelectorAll('#gbox [data-v]')].find(b => norm(b.dataset.v) === norm(g));
+  if (ex) { if (ex.getAttribute('aria-pressed') !== 'true') ex.click(); }
+  else {
+    if (!draft.genres.includes(g)) draft.genres.push(g);
+    $('#gbox').insertAdjacentHTML('beforeend', `<button type="button" class="chip" data-a="fgenre" data-v="${esc(g)}" aria-pressed="true">${esc(g)}</button>`);
+  }
+}
+async function applyRelease(m) {
+  if (!draft || !$('#f')) return;
+  const set = (sel, v) => { const e = $(sel); if (e) e.value = v; };
+  set('#f-artist', m.artist); set('#f-album', m.album);
+  if (/^\d{4}$/.test(m.year)) set('#f-year', m.year);
+  if (m.format) { draft.format = m.format; document.querySelectorAll('#seg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === m.format)); }
+  m.genres.forEach(addGenre);
+  if (m.tracks.length) {
+    const ta = $('#f-tracks');
+    if (!ta.value.trim() || await dialog({msg: 'Substituir as faixas digitadas pela lista encontrada?', ok: 'Substituir'})) ta.value = tracksToText(m.tracks);
+  }
+  const nt = $('#f-notes'); if (m.label && !nt.value.trim()) nt.value = 'Gravadora: ' + m.label;
+  let capa = false;
+  if (!draft.photo) { const b = await fetchCover(m.id); if (b && draft) { draft.photo = b; $('#photoArea').innerHTML = photoAreaHTML(); capa = true; } }
+  toast(capa ? 'Achei! Dados e capa preenchidos' : 'Achei! Dados preenchidos');
+}
+async function mbPick(i) {
+  const r = mbList[i]; if (!r) return;
+  mbMsg('<p class="note">Buscando as faixas…</p>');
+  try {
+    const rel = await mb(`release/${encodeURIComponent(r.id)}?inc=recordings+artist-credits+labels+release-groups`);
+    let genres = [];
+    const rgid = (rel['release-group'] && rel['release-group'].id) || r.rg;
+    if (rgid) { try { const g = await mb(`release-group/${encodeURIComponent(rgid)}?inc=genres`); genres = (g.genres || []).sort((a, b) => (b.count || 0) - (a.count || 0)).map(x => x.name); } catch (e) {} }
+    const label = ((rel['label-info'] || []).map(l => l.label && l.label.name).filter(Boolean)[0]) || r.label;
+    await applyRelease({
+      id: rel.id || r.id, artist: acName(rel['artist-credit']) || r.artist, album: rel.title || r.title,
+      year: String(rel.date || r.date || '').slice(0, 4), format: mbFormat(rel.media) || r.fmt,
+      genres: mapGenres(genres), tracks: mbTracks(rel.media), label
+    });
+    mbMsg('<p class="note">Pronto! Confira os campos abaixo e guarde o achado.</p>');
+  } catch (e) {
+    mbRender(); toast(e.message === 'limite' ? 'Espere alguns segundos e tente de novo' : 'Não consegui carregar esse disco. Toque nele de novo.');
+  }
+}
+async function detectBarcode(src) {
+  if (!HAS_BD) return null;
+  let det;
+  try { det = new BarcodeDetector({formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e']}); }
+  catch (e) { try { det = new BarcodeDetector(); } catch (e2) { return null; } }
+  try { const r = await det.detect(src); const c = r.find(x => /^\d{8,14}$/.test(x.rawValue || '')); return c ? c.rawValue : null; }
+  catch (e) { return null; }
+}
+async function startScan() {
+  if (!HAS_BD) return toast('Este navegador não lê código de barras: digite os números.');
+  const ov = $('#scan'), v = $('#scanv');
+  try { scanStream = await navigator.mediaDevices.getUserMedia({video: {facingMode: {ideal: 'environment'}, width: {ideal: 1280}}, audio: false}); }
+  catch (e) { return toast('Libere a câmera para escanear o código de barras.'); }
+  v.srcObject = scanStream; ov.hidden = false; try { await v.play(); } catch (e) {}
+  let det;
+  try { det = new BarcodeDetector({formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e']}); } catch (e) { det = new BarcodeDetector(); }
+  let busy = false;
+  scanTimer = setInterval(async () => {
+    if (busy || v.readyState < 2) return; busy = true;
+    try {
+      const r = await det.detect(v), c = r.find(x => /^\d{8,14}$/.test(x.rawValue || ''));
+      if (c) { stopScan(); const bc = $('#f-bc'); if (bc) bc.value = c.rawValue; toast('Código lido: ' + c.rawValue + '. Procurando seu disco…'); bcSearch(c.rawValue); }
+    } catch (e) {}
+    busy = false;
+  }, 300);
+}
+function stopScan() {
+  clearInterval(scanTimer); scanTimer = null;
+  if (scanStream) { scanStream.getTracks().forEach(t => t.stop()); scanStream = null; }
+  $('#scan').hidden = true; $('#scanv').srcObject = null;
+}
+
+// ---------- exemplos ----------
+function exampleItems() {
+  const t = s => parseTracks(s), now = Date.now();
+  return [
+    {format:'vinil', artist:'Miles Davis', album:'Kind of Blue', year:1959, genres:['Jazz'], condition:'VG+', value:180, location:'Caixa A', notes:'', tracks:t('A1 So What\nA2 Freddie Freeloader\nA3 Blue in Green\nB1 All Blues\nB2 Flamenco Sketches')},
+    {format:'vinil', artist:'The Beatles', album:'Abbey Road', year:1969, genres:['Rock','Pop'], condition:'VG', value:220, location:'Caixa A', notes:'', tracks:t("A1 Come Together\nA2 Something\nA3 Maxwell's Silver Hammer\nA4 Oh! Darling\nA5 Octopus's Garden\nA6 I Want You (She's So Heavy)\nB1 Here Comes the Sun\nB2 Because\nB3 You Never Give Me Your Money\nB4 Sun King\nB5 Mean Mr. Mustard\nB6 Polythene Pam\nB7 She Came in Through the Bathroom Window\nB8 Golden Slumbers\nB9 Carry That Weight\nB10 The End\nB11 Her Majesty")},
+    {format:'fita', artist:'Michael Jackson', album:'Thriller', year:1982, genres:['Pop','Funk','Soul'], condition:'NM', value:60, location:'Estante 2', notes:'', tracks:t("1. Wanna Be Startin' Somethin'\n2. Baby Be Mine\n3. The Girl Is Mine\n4. Thriller\n5. Beat It\n6. Billie Jean\n7. Human Nature\n8. P.Y.T. (Pretty Young Thing)\n9. The Lady in My Life")},
+    {format:'cd', artist:'Nirvana', album:'Nevermind', year:1991, genres:['Rock'], condition:'VG+', value:45, location:'Estante 1', notes:'', tracks:t("1. Smells Like Teen Spirit\n2. In Bloom\n3. Come as You Are\n4. Breed\n5. Lithium\n6. Polly\n7. Territorial Pissings\n8. Drain You\n9. Lounge Act\n10. Stay Away\n11. On a Plain\n12. Something in the Way")}
+  ].map((x, i) => ({...x, id: 'ex-' + i, createdAt: now - i, updatedAt: now, photo: null, example: true}));
+}
+async function loadExamples() {
+  for (const it of exampleItems()) { await DB.put('items', it); if (!state.items.some(x => x.id === it.id)) state.items.push(it); }
+  toast('Exemplos carregados. Explore à vontade e remova depois em Mais.'); if (sheetOpen) closeSheet(); render();
+}
+
+// =====================================================================
+// RENDER / NAV
+// =====================================================================
+const views = {caixa: viewCaixa, garimpar: viewGarimpar, setlist: viewSetlist};
+function render() {
+  $('#main').innerHTML = views[state.view]();
+  if (state.view === 'garimpar') renderResults();
+  document.querySelectorAll('nav.tabs [data-v]').forEach(b => b.setAttribute('aria-current', b.dataset.v === state.view ? 'page' : 'false'));
+}
+function go(v) { state.view = v; render(); window.scrollTo(0, 0); }
+
+// =====================================================================
+// EVENTOS
+// =====================================================================
+const A = {
+  nav: el => go(el.dataset.v),
+  new: () => openForm(null),
+  menu: () => openMenu(),
+  close: () => closeSheet(),
+  open: el => openDetail(el.dataset.id, el.dataset.hl != null ? +el.dataset.hl : null),
+  fformat: el => { state.fFormat = el.dataset.v; render(); },
+  sformat: el => { state.sFormat = el.dataset.v; render(); },
+  sgenre: el => { state.sGenre = state.sGenre === el.dataset.v ? null : el.dataset.v; render(); },
+  setq: el => { state.q = el.dataset.v; const q = $('#q'); if (q) q.value = state.q; renderResults(); window.scrollTo(0, 0); },
+  rand: () => { const l = state.items.filter(itemMatchesFilters); if (!l.length) return toast('Nada na caixa com esse filtro.'); openDetail(l[Math.floor(Math.random() * l.length)].id); },
+  examples: () => loadExamples(),
+  rmexamples: async () => { for (const i of state.items.filter(x => x.example)) await DB.del('items', i.id); state.items = state.items.filter(x => !x.example); toast('Exemplos removidos. Sua caixa ficou só com o que é seu.'); closeSheet(); render(); },
+  wipe: async () => {
+    if (!(await dialog({msg: 'Apagar TODO o acervo? Isso remove todos os achados, fotos e setlists deste aparelho e não pode ser desfeito. Se ainda não fez a cópia de segurança, cancele e exporte antes.', ok: 'Apagar tudo', danger: true}))) return;
+    await DB.clear('items'); await DB.clear('setlists'); state.items = []; state.setlists = []; state.result = null; toast('Acervo apagado.'); closeSheet(); render();
+  },
+  export: () => exportBackup(),
+  import: () => $('#importFile').click(),
+  install: async () => { if (!deferredInstall) return; deferredInstall.prompt(); await deferredInstall.userChoice; deferredInstall = null; closeSheet(); },
+  edit: el => openForm(state.items.find(i => i.id === el.dataset.id)),
+  delete: async el => {
+    const it = state.items.find(i => i.id === el.dataset.id);
+    if (!it || !(await dialog({msg: `Tirar “${it.album}”, de ${it.artist}, da sua caixa? O registro e a foto serão apagados deste aparelho.`, ok: 'Tirar da caixa', danger: true}))) return;
+    await DB.del('items', it.id); state.items = state.items.filter(i => i.id !== it.id); toast('Achado removido da caixa'); closeSheet(); render();
+  },
+  // formulário
+  fmt: el => { draft.format = el.dataset.v; document.querySelectorAll('#seg button').forEach(b => b.setAttribute('aria-pressed', b === el)); },
+  fgenre: el => {
+    const g = el.dataset.v, k = draft.genres.indexOf(g);
+    if (k >= 0) draft.genres.splice(k, 1); else draft.genres.push(g);
+    el.setAttribute('aria-pressed', k < 0);
+  },
+  addg: () => { const inp = $('#g-new'); addGenre(inp.value); inp.value = ''; },
+  mbsearch: () => {
+    const ar = lq($('#f-artist').value), al = lq($('#f-album').value);
+    if (!ar && !al) return toast('Digite o artista e/ou o álbum e toque em “Buscar pelo nome”.');
+    const parts = []; if (al) parts.push(lqField('release', al)); if (ar) parts.push(lqField('artist', ar));
+    mbSearch(parts.join(' AND '));
+  },
+  bcsearch: () => bcSearch($('#f-bc').value),
+  bcscan: () => startScan(),
+  scanclose: () => stopScan(),
+  mbpick: el => mbPick(+el.dataset.i),
+  rmphoto: () => { draft.photo = null; $('#photoArea').innerHTML = photoAreaHTML(); },
+  // setlist
+  slgenre: el => { const g = el.dataset.v, a = state.sl.genres, k = a.indexOf(g); if (k >= 0) a.splice(k, 1); else a.push(g); el.setAttribute('aria-pressed', k < 0); },
+  slformat: el => { state.sl.format = el.dataset.v; render(); },
+  gen: () => { genSetlist(); $('#setresult').innerHTML = setResultHTML(); const r = $('#setresult'); r.scrollIntoView({behavior: 'smooth', block: 'start'}); },
+  swap: el => {
+    const i = +el.dataset.i, r = state.result, cur = r[i], per = state.sl.perAlbum;
+    const used = new Set(r.map(e => e.key));
+    const cand = shuffle(buildPool()).find(e => !used.has(e.key) && (!per || r.filter((x, k) => k !== i && x.itemId === e.itemId).length < per));
+    if (!cand) return toast('Não há outra música disponível com esses filtros');
+    r[i] = cand; $('#setresult').innerHTML = setResultHTML();
+  },
+  rmtrack: el => { state.result.splice(+el.dataset.i, 1); $('#setresult').innerHTML = setResultHTML(); },
+  copyset: async () => {
+    const txt = setAsText();
+    try { await navigator.clipboard.writeText(txt); toast('Setlist copiada'); }
+    catch (e) { const ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); toast('Setlist copiada'); }
+  },
+  shareset: async () => { try { await navigator.share({title: 'Setlist', text: setAsText()}); } catch (e) {} },
+  saveset: async () => {
+    const def = (state.resultName || 'Setlist de ' + new Date().toLocaleDateString('pt-BR'));
+    const name = await dialog({msg: 'Dê um nome para esta setlist:', input: def, ok: 'Salvar'}); if (!name || !name.trim()) return;
+    const l = {id: uid(), name: name.trim(), createdAt: Date.now(), entries: state.result};
+    await DB.put('setlists', l); state.setlists.push(l); state.resultName = l.name; toast('Setlist guardada'); render();
+  },
+  loadset: el => { const l = state.setlists.find(x => x.id === el.dataset.id); if (!l) return; state.result = l.entries.slice(); state.resultName = l.name; render(); $('#setresult').scrollIntoView({behavior: 'smooth'}); },
+  delset: async el => {
+    const l = state.setlists.find(x => x.id === el.dataset.id); if (!l || !(await dialog({msg: `Apagar a setlist “${l.name}”?`, ok: 'Apagar', danger: true}))) return;
+    await DB.del('setlists', l.id); state.setlists = state.setlists.filter(x => x.id !== l.id); render();
+  }
+};
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-a]'); if (!el) return;
+  const fn = A[el.dataset.a]; if (fn) { if (el.tagName === 'A') e.preventDefault(); fn(el, e); }
+});
+document.addEventListener('input', e => {
+  if (e.target.id === 'q') { state.q = e.target.value; renderResults(); }
+  if (e.target.id === 'slcount') { state.sl.count = +e.target.value; $('#cnt').textContent = e.target.value; }
+});
+document.addEventListener('change', async e => {
+  const t = e.target;
+  if (t.id === 'sort') { state.sort = t.value; render(); }
+  if (t.id === 'slper') state.sl.perAlbum = +t.value;
+  if (t.id === 'importFile' && t.files[0]) { await importBackup(t.files[0]); t.value = ''; }
+  if (t.dataset.in === 'photo' && t.files[0]) {
+    const area = $('#photoArea'); const f = t.files[0]; t.value = '';
+    area.style.opacity = .5;
+    try { const blob = await resizeImage(f); if (!draft) return; draft.photo = blob; area.innerHTML = photoAreaHTML(); }
+    catch (err) { toast('Não consegui abrir essa foto. Tente tirar outra.'); }
+    area.style.opacity = 1;
+    if (HAS_BD) {   // procura um código de barras na própria foto
+      try {
+        const bmp = await createImageBitmap(f), code = await detectBarcode(bmp); if (bmp.close) bmp.close();
+        const bc = $('#f-bc');
+        if (code && bc) { bc.value = code; toast('Achei um código de barras na foto. Procurando seu disco…'); bcSearch(code); }
+      } catch (err) {}
+    }
+  }
+});
+document.addEventListener('submit', e => { if (e.target.id === 'f') { e.preventDefault(); saveForm(e.target); } });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.target.id === 'g-new') { e.preventDefault(); A.addg(); }
+  if (e.key === 'Enter' && e.target.id === 'f-bc') { e.preventDefault(); A.bcsearch(); }
+  if (e.key === 'Escape') { if (!$('#scan').hidden) stopScan(); else if (!$('#dlg').hidden) $('#dlg').click(); else if (sheetOpen) closeSheet(); }
+  if (e.key === 'Enter' && e.target.id === 'dlgin') { e.preventDefault(); $('[data-d=ok]').click(); }
+});
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredInstall = e; });
+
+// =====================================================================
+// INÍCIO
+// =====================================================================
+async function boot() {
+  $('#brand').insertAdjacentHTML('afterbegin', fanSVG(400, 96, 22, .30));
+  $('#t-caixa').innerHTML = ic('caixa', 24) + 'Caixa';
+  $('#t-garimpar').innerHTML = ic('busca', 24) + 'Garimpar';
+  $('#t-setlist').innerHTML = ic('setlist', 24) + 'Setlist';
+  $('#t-mais').innerHTML = ic('mais', 24) + 'Mais';
+  $('#t-add').innerHTML = ic('plus', 30);
+  const ok = await DB.open();
+  if (ok) {
+    try {
+      state.items = (await DB.all('items')).map(i => ({genres: [], tracks: [], ...i}));
+      state.setlists = await DB.all('setlists');
+      if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
+    } catch (e) {}
+  } else toast('Este navegador não está deixando guardar dados: o que você registrar não será salvo.');
+  render();
+  if ('serviceWorker' in navigator && /^https:|^http:\/\/localhost/.test(location.href)) {
+    const had = !!navigator.serviceWorker.controller;
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+    navigator.serviceWorker.addEventListener('controllerchange', () => { if (had) toast('Há uma versão nova do Garimpo Sound. Feche e abra o app para usá-la.'); });
+  }
+}
+boot();
+</script>
+</body>
+</html>

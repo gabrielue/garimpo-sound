@@ -1,0 +1,62 @@
+GARIMPO SOUND — acervo de vinis, CDs e fitas (versão embrionária)
+
+VEJA TAMBÉM O MANUAL ILUSTRADO: garimpo-sound-manual-instalacao.pdf (passo a passo para Android).
+
+PARA INSTALAR NO ANDROID PRECISA DE UM LINK HTTPS (a câmera e a instalação exigem isso).
+Escolha UMA das opções abaixo. Ambas são gratuitas.
+
+OPÇÃO A — GitHub Pages (permanente, sem prazo)
+1. Crie uma conta gratuita em github.com.
+2. Clique em "New repository". Nome: garimpo-sound. Deixe "Public" e crie.
+3. Na página do repositório, clique em "uploading an existing file".
+4. Descompacte o zip no computador e arraste TODOS os arquivos para lá
+   (index.html, sw.js, manifest.webmanifest e os .png). Clique em "Commit changes".
+5. Vá em Settings > Pages. Em "Build and deployment", escolha
+   Source: "Deploy from a branch", Branch: main, pasta: / (root). Salve.
+6. Em 1 a 2 minutos o endereço aparece nessa mesma tela, no formato
+   https://SEU-USUARIO.github.io/garimpo-sound/
+   (Os nomes dos menus podem mudar um pouco com o tempo.)
+   O repositório é público, mas contém só o código do app. Seus dados NÃO vão para lá.
+
+OPÇÃO B — Netlify (precisa de conta para não expirar)
+1. Crie uma conta gratuita em netlify.com ANTES de publicar.
+2. Já logado, vá em app.netlify.com/drop e arraste a pasta (ou o zip).
+3. Se publicar sem conta, o site é apagado depois de pouco tempo, a menos
+   que você o "reivindique" (Claim) entrando numa conta.
+
+DEPOIS DE PUBLICAR
+- Abra o endereço no Chrome do celular > menu ⋮ > "Instalar app".
+- iPhone: Safari > Compartilhar > "Adicionar à Tela de Início".
+- Funciona offline depois de instalado.
+
+PARA ATUALIZAR UMA NOVA VERSÃO
+- Envie os arquivos novos para o mesmo lugar (GitHub: "Add file > Upload files").
+- No celular, abra o app duas vezes (a primeira baixa, a segunda mostra a versão nova).
+- Seus dados NÃO são apagados em atualizações.
+
+SEUS DADOS
+- Ficam só neste aparelho, dentro do navegador. Não existe servidor.
+- Apagar os dados do Chrome ou desinstalar o app apaga o acervo.
+  Use Mais > "Exportar cópia de segurança" com frequência e guarde o arquivo no Drive/e-mail.
+- Importe somente cópias geradas por você. O app valida o arquivo e descarta o que for estranho.
+
+TESTAR NO COMPUTADOR SEM PUBLICAR
+- Abra um terminal na pasta e rode:  python3 -m http.server 8000
+- Acesse http://localhost:8000
+
+PREENCHIMENTO AUTOMÁTICO (novo)
+- No formulário de "Novo achado", digite artista e/ou álbum e toque em "Buscar pelo nome",
+  ou use o código de barras (traseira da capa): digitado, escaneado com a câmera
+  (Chrome/Samsung Internet no Android) ou lido direto da foto tirada.
+- O app traz artista, álbum, ano, formato, gêneros, gravadora e a lista de faixas.
+  Se o item ainda não tiver foto, usa a capa oficial quando existir.
+- Vinis e fitas antigos podem não ter código de barras, e prensagens raras podem faltar na base.
+  Sempre confira os dados antes de salvar.
+- Fontes: MusicBrainz (dados) e Cover Art Archive (capas), projetos abertos e gratuitos.
+- Privacidade: só o texto ou o código buscado vai para esses serviços. Seu acervo e suas
+  fotos continuam apenas no aparelho. Sem internet, o app funciona normalmente, só sem a busca.
+
+SE VOCÊ JÁ INSTALOU A VERSÃO ANTERIOR
+- Publique os arquivos novos no mesmo lugar, abra o app duas vezes e pronto: os dados ficam.
+- O nome na tela inicial só muda se você desinstalar e instalar de novo. Faça antes a
+  cópia de segurança em Mais > "Exportar cópia de segurança".
