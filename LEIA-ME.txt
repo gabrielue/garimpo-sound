@@ -60,3 +60,14 @@ SE VOCÊ JÁ INSTALOU A VERSÃO ANTERIOR
 - Publique os arquivos novos no mesmo lugar, abra o app duas vezes e pronto: os dados ficam.
 - O nome na tela inicial só muda se você desinstalar e instalar de novo. Faça antes a
   cópia de segurança em Mais > "Exportar cópia de segurança".
+
+NOVIDADES DESTA VERSÃO
+- Duas fotos por item (frente e verso) e até 2 extras, com editor de recorte (arrastar cantos, quadrado, girar).
+- Preencher automaticamente, de quatro jeitos:
+  1) código de barras (digitado, escaneado ou lido direto da foto do verso);
+  2) busca livre por nome de disco, artista ou novela (MusicBrainz e, se ligar, Discogs);
+  3) "Identificar pelas fotos" com IA (opcional, paga por uso, com a sua chave da Anthropic);
+  4) "Colar informações": cole texto do Google/Discogs/Wikipédia e o app separa título e intérprete.
+- Cada faixa pode ter seu intérprete (trilhas de novela e coletâneas): "Título — Intérprete".
+- Configurações em Mais > Identificação automática. As chaves ficam só no aparelho e NÃO entram no backup.
+- Itens cadastrados na versão anterior continuam: a foto antiga vira a "Frente".

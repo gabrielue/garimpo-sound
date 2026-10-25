@@ -6,7 +6,7 @@
 <title>Garimpo Sound — acervo de vinis, CDs e fitas</title>
 <meta name="theme-color" content="#12100c">
 <meta name="color-scheme" content="dark">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data:; media-src 'self' blob:; connect-src 'self' data: blob: https://musicbrainz.org https://coverartarchive.org https://*.archive.org; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data:; media-src 'self' blob:; connect-src 'self' data: blob: https://musicbrainz.org https://coverartarchive.org https://*.archive.org https://api.discogs.com https://api.anthropic.com; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="description" content="Catalogue seus vinis, CDs e fitas, ache qualquer música da sua coleção e monte setlists.">
 <link rel="manifest" href="manifest.webmanifest">
@@ -207,7 +207,22 @@ nav.tabs .add b{font-weight:500;position:absolute;bottom:8px;left:0;right:0;text
 .dlg{z-index:70;display:grid;place-items:center;padding:20px}
 .dlg .box{background:var(--bg2);border:1px solid var(--gold);padding:22px;max-width:420px;width:100%;display:grid;gap:16px;box-shadow:0 0 0 4px var(--bg2),0 0 0 5px var(--gold-deep)}
 .dlg .box p{font-size:16px}
-.dlg .box input{background:var(--surf);border:1px solid var(--line);border-radius:2px;padding:12px;min-height:46px;font-size:16px;width:100%}
+.dlg .box input:not([type=checkbox]),.dlg .box textarea{background:var(--surf);border:1px solid var(--line);border-radius:2px;padding:12px;min-height:46px;font-size:16px;width:100%}
+.dlg .box textarea{line-height:1.5;resize:vertical}
+.dlg .box.big{max-height:90vh;overflow:auto;gap:12px}
+.dlg .box summary{cursor:pointer;color:var(--gold);padding:8px 0;font-weight:600}
+.dlg .box details{border-top:1px solid var(--hair);padding:2px 0}
+.dlg .box ol{padding-left:20px;display:grid;gap:5px;margin:6px 0 8px}
+.dlg .box p.hint,.dlg .box ol.hint{font-size:12.5px;line-height:1.45;color:var(--muted)}
+.dlg .lbl{display:block;margin:8px 0 4px}
+.chk{display:flex;gap:10px;align-items:flex-start;font-size:14px;margin:8px 0}
+.chk input{width:22px;height:22px;accent-color:var(--gold);margin-top:1px;flex:none}
+.linkbtn{color:var(--gold);text-decoration:underline;font-size:13px;justify-self:start;padding:6px 0}
+.aicard{border:1px solid var(--gold);background:var(--surf);padding:14px;display:grid;gap:8px}
+.aicard .t1{font-family:var(--disp);font-size:18px;line-height:1.25}
+.aicard .tagc{display:inline-block;font-size:12px;padding:2px 8px;border:1px solid var(--line);color:var(--gold);justify-self:start}
+.src{font-size:11px;color:var(--gold-deep)}
+.bc.q{grid-template-columns:1fr auto}
 .dlg .acts{margin:0}
 .auto{border:1px solid var(--line);border-left:3px solid var(--gold);background:var(--bg2);padding:16px;margin:2px 0 22px;display:grid;gap:12px}
 .auto h3{font-family:var(--disp);font-weight:400;font-size:17px;color:var(--gold);display:flex;gap:8px;align-items:center}
@@ -222,8 +237,32 @@ nav.tabs .add b{font-weight:500;position:absolute;bottom:8px;left:0;right:0;text
 .vf::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:var(--gold-hi);box-shadow:0 0 8px var(--gold)}
 .scan-ui{position:absolute;left:0;right:0;bottom:calc(32px + env(safe-area-inset-bottom));display:grid;justify-items:center;gap:14px;color:var(--paper);text-shadow:0 1px 4px #000}
 .scan-ui .btn.ghost{background:rgba(18,16,12,.8)}
+.pa{margin-bottom:18px}
+.photos{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.slot{display:grid;gap:8px;align-content:start;min-width:0}
+.slot-lbl{font-size:13px;color:var(--gold)}
+.slot .frame{--c:12px}
+.slot .drop{aspect-ratio:1;display:grid;place-items:center;text-align:center;padding:10px;font-size:13px;color:var(--muted);background:repeating-conic-gradient(from 0deg at 50% 118%,rgba(212,175,97,.10) 0 5deg,transparent 5deg 10deg),var(--bg2)}
+.slot-btns{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.btn.sm{--c:7px;min-height:42px;padding-inline:10px;font-size:13px;gap:6px}
+.btn.ghost.sm{padding-inline:6px}
+.pa .addp{margin-top:12px;width:100%}
+.pa .hint{font-size:12.5px;color:var(--muted);line-height:1.45}
+.thumbs{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.thumb{display:grid;gap:4px;justify-items:center;width:72px;color:var(--muted);font-size:11px;opacity:.75}
+.thumb img{width:72px;height:72px;object-fit:cover;border:1px solid var(--line);display:block}
+.thumb[aria-pressed=true]{opacity:1;color:var(--gold-hi)}
+.thumb[aria-pressed=true] img{border-color:var(--gold)}
+.ta{display:block;color:var(--muted);font-size:13px}
+.crop{z-index:78;background:#0b0907;display:grid;grid-template-rows:auto minmax(0,1fr) auto;padding-top:env(safe-area-inset-top)}
+.crop-top{padding:12px 16px 4px;text-align:center;color:var(--paper);font-size:14px}
+.crop-stage{display:grid;place-items:center;overflow:hidden;padding:8px}
+.crop-stage canvas{touch-action:none;display:block}
+.crop-bar{padding:12px 14px calc(14px + env(safe-area-inset-bottom));display:grid;gap:12px;background:var(--bg2);box-shadow:0 -1px 0 var(--gold-deep)}
+.crop-bar .chips{justify-content:center}
+.crop-bar .acts{margin:0;justify-content:center}
 .toast{position:fixed;left:50%;bottom:calc(var(--nav) + 26px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:80;background:var(--gold);color:#17120a;font-weight:600;font-size:14px;padding:10px 20px;max-width:88vw;text-align:center;
-  clip-path:polygon(8px 0,calc(100% - 8px) 0,100% 50%,calc(100% - 8px) 100%,8px 100%,0 50%)}
+  clip-path:polygon(8px 0,calc(100% - 8px) 0,100% 8px,100% calc(100% - 8px),calc(100% - 8px) 100%,8px 100%,0 calc(100% - 8px),0 8px)}
 .toast[hidden]{display:none}
 .menu-list{display:grid;gap:10px}
 .menu-list .btn{justify-content:flex-start;width:100%}
@@ -256,6 +295,19 @@ nav.tabs .add b{font-weight:500;position:absolute;bottom:8px;left:0;right:0;text
 
 <div class="sheet" id="sheet" hidden role="dialog" aria-modal="true"><div class="panel" id="panel"></div></div>
 <div class="sheet dlg" id="dlg" hidden></div>
+<div class="sheet crop" id="crop" hidden role="dialog" aria-modal="true" aria-label="Recortar foto">
+  <div class="crop-top">Arraste os cantos para deixar só o disco, CD ou fita</div>
+  <div class="crop-stage" id="cropstage"><canvas id="cropcv"></canvas></div>
+  <div class="crop-bar">
+    <div class="chips">
+      <button type="button" class="chip" data-a="crot">Girar</button>
+      <button type="button" class="chip" data-a="cmode" data-v="livre" aria-pressed="true">Livre</button>
+      <button type="button" class="chip" data-a="cmode" data-v="quadrado" aria-pressed="false">Quadrado</button>
+      <button type="button" class="chip" data-a="cfull">Foto inteira</button>
+    </div>
+    <div class="acts"><button type="button" class="btn" data-a="cok">Usar esta foto</button><button type="button" class="btn ghost" data-a="ccancel">Cancelar</button></div>
+  </div>
+</div>
 <div class="sheet scan" id="scan" hidden role="dialog" aria-modal="true" aria-label="Escanear código de barras">
   <video id="scanv" playsinline muted></video>
   <div class="vf" aria-hidden="true"></div>
@@ -309,7 +361,8 @@ const P = {
   copiar:'<rect x="8" y="8" width="12" height="12" rx="1.5"/><path d="M16 8V5.5A1.5 1.5 0 0 0 14.5 4h-9A1.5 1.5 0 0 0 4 5.5v9A1.5 1.5 0 0 0 5.5 16H8"/>',
   enviar:'<path d="M12 15V4M7.5 8.5L12 4l4.5 4.5"/><path d="M5 13v6.5h14V13"/>',
   salvar:'<path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4M8 20v-6h8v6"/>',
-  baixar:'<path d="M12 4v11M7.5 10.5L12 15l4.5-4.5"/><path d="M5 19.5h14"/>'
+  baixar:'<path d="M12 4v11M7.5 10.5L12 15l4.5-4.5"/><path d="M5 19.5h14"/>',
+  recorte:'<path d="M7 3v14h14"/><path d="M3 7h14v14"/>'
 };
 const ic = (n, s = 22) => `<svg class="i" viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[n] || ''}</svg>`;
 
@@ -366,16 +419,21 @@ let sheetOpen = false, pushed = false;
 let deferredInstall = null;
 
 // ---------- fotos ----------
+const PHOTO_LABELS = ['Frente', 'Verso', 'Extra 1', 'Extra 2'];
 const urlCache = new Map();
-function photoURL(it) {
-  if (!it.photo) return null;
-  let u = urlCache.get(it.id);
-  if (!u || u.blob !== it.photo) {
-    if (u) URL.revokeObjectURL(u.url);
-    u = {blob: it.photo, url: URL.createObjectURL(it.photo)};
-    urlCache.set(it.id, u);
-  }
+const photoList = it => (it.photos || (it.photo ? [it.photo] : [])).map((b, i) => b ? {b, i} : null).filter(Boolean);
+function photoURL(it, idx = null) {
+  const list = photoList(it); if (!list.length) return null;
+  const e = idx == null ? list[0] : list.find(x => x.i === idx); if (!e) return null;
+  const key = it.id + ':' + e.i; let u = urlCache.get(key);
+  if (!u || u.blob !== e.b) { if (u) URL.revokeObjectURL(u.url); u = {blob: e.b, url: URL.createObjectURL(e.b)}; urlCache.set(key, u); }
   return u.url;
+}
+function normItem(i) {
+  i = {genres: [], tracks: [], ...i};
+  if (!Array.isArray(i.photos)) i.photos = i.photo ? [i.photo] : [];
+  i.photo = i.photos.find(Boolean) || null;
+  return i;
 }
 async function resizeImage(file, max = 900) {
   let bmp;
@@ -393,12 +451,16 @@ async function resizeImage(file, max = 900) {
 // ---------- faixas ----------
 function parseTracks(text) {
   return String(text || '').split(/\r?\n/).map(l => l.trim()).filter(Boolean).map((l, i) => {
+    let pos = String(i + 1), rest = l;
     const m = l.match(/^(?:([A-Da-d]\d{1,2})[.)\-–:\s]+|(\d{1,3})\s*[.)\-–:]\s*)(.+)$/);
-    if (m) return {pos: (m[1] || m[2]).toUpperCase(), t: m[3].trim()};
-    return {pos: String(i + 1), t: l};
+    if (m) { pos = (m[1] || m[2]).toUpperCase(); if (/^\d+$/.test(pos)) pos = String(+pos); rest = m[3].trim(); }
+    let t = rest, a = '';
+    const k = rest.search(/\s[—|]\s/);          // "Título — Intérprete" (coletâneas e trilhas)
+    if (k > 0) { t = rest.slice(0, k).trim(); a = rest.slice(k).replace(/^\s[—|]\s/, '').trim(); }
+    const o = {pos, t}; if (a) o.a = a.slice(0, 150); return o;
   });
 }
-const tracksToText = tr => (tr || []).map(x => /^\d+$/.test(x.pos) ? `${x.pos}. ${x.t}` : `${x.pos} ${x.t}`).join('\n');
+const tracksToText = tr => (tr || []).map(x => (/^\d+$/.test(x.pos) ? `${x.pos}. ` : `${x.pos} `) + x.t + (x.a ? ` — ${x.a}` : '')).join('\n');
 
 // ---------- realce de busca ----------
 function hl(text, tokens) {
@@ -418,9 +480,11 @@ function hl(text, tokens) {
 }
 
 // ---------- componentes visuais ----------
+// monta a tag de imagem por concatenação: assim o texto do script nunca contém uma tag de imagem completa (o navegador chegou a tentar carregá-la sozinho)
+const imgTag = (url, alt, extra = '') => '<' + 'img src="' + url + '" alt="' + esc(alt) + '"' + extra + '>';
 function cover(it) {
   const f = FORMATS[it.format] || FORMATS.vinil, u = photoURL(it);
-  if (u) return `<div class="cover"><img src="${u}" alt="Capa de ${esc(it.album)}" loading="lazy"></div>`;
+  if (u) return `<div class="cover">${imgTag(u, 'Capa de ' + it.album, ' loading="lazy"')}</div>`;
   return `<div class="cover ph" style="--fc:${f.color}"><span class="ini">${esc((it.album || '?').trim().charAt(0).toUpperCase())}</span></div>`;
 }
 const chipRow = (active, action, withAll = true) =>
@@ -463,7 +527,15 @@ function openSheet(html) {
 }
 function hideSheet() { $('#sheet').hidden = true; sheetOpen = false; pushed = false; document.body.style.overflow = ''; draft = null; }
 function closeSheet() { if (!sheetOpen) return; if (pushed) history.back(); else hideSheet(); }
-window.addEventListener('popstate', () => { if (sheetOpen) hideSheet(); });
+let ovPushed = false, skipPop = false;
+function ovOpen() { try { history.pushState({ov: 1}, ''); ovPushed = true; } catch (e) { ovPushed = false; } }
+function ovClose() { if (ovPushed) { ovPushed = false; skipPop = true; setTimeout(() => { skipPop = false; }, 700); history.back(); } }
+window.addEventListener('popstate', () => {
+  if (skipPop) { skipPop = false; return; }
+  if (!$('#crop').hidden) { ovPushed = false; cropFinish(null); return; }
+  if (!$('#scan').hidden) { ovPushed = false; stopScan(true); return; }
+  if (sheetOpen) hideSheet();
+});
 $('#sheet').addEventListener('click', e => { if (e.target.id === 'sheet') closeSheet(); });
 
 // =====================================================================
@@ -543,10 +615,16 @@ function renderResults() {
   const hit = (hay, tks) => tks.every(t => hay.includes(t));
   const albums = items.filter(i => hit(norm([i.album, i.artist, i.year, i.genres.join(' '), i.location].join(' ')), tokens));
   const artistMap = new Map();
-  items.forEach(i => { if (hit(norm(i.artist), tokens)) artistMap.set(i.artist, (artistMap.get(i.artist) || 0) + 1); });
+  const artistSets = new Map();
+  items.forEach(i => {
+    [i.artist, ...i.tracks.map(t => t.a)].filter(Boolean).forEach(a => {
+      if (hit(norm(a), tokens)) { if (!artistSets.has(a)) artistSets.set(a, new Set()); artistSets.get(a).add(i.id); }
+    });
+  });
+  artistSets.forEach((v, k) => artistMap.set(k, v.size));
   const tracks = [];
   items.forEach(i => i.tracks.forEach((tr, idx) => {
-    const hay = tokens.length > 1 ? norm(tr.t + ' ' + i.artist + ' ' + i.album) : norm(tr.t);
+    const hay = tokens.length > 1 ? norm(tr.t + ' ' + (tr.a || '') + ' ' + i.artist + ' ' + i.album) : norm(tr.t + ' ' + (tr.a || ''));
     if (hit(hay, tokens)) tracks.push({i, tr, idx});
   }));
 
@@ -560,7 +638,7 @@ function renderResults() {
   if (tracks.length) {
     h += `<h2>Músicas</h2>` + tracks.slice(0, 80).map(({i, tr, idx}) => `
       <button class="row" data-a="open" data-id="${esc(i.id)}" data-hl="${idx}" style="--fc:${FORMATS[i.format].color}">
-        <div class="tx"><span class="t1">${hl(tr.t, tokens)}</span><span class="t2">${esc(i.artist)}, ${esc(i.album)}</span></div>
+        <div class="tx"><span class="t1">${hl(tr.t, tokens)}</span><span class="t2">${hl(tr.a || i.artist, tokens)}, ${esc(i.album)}</span></div>
         <div class="end">${ic(i.format, 18)}<span><span class="pos">${esc(tr.pos)}</span>${i.location ? ' · ' + esc(i.location) : ''}</span></div></button>`).join('');
     if (tracks.length > 80) h += `<p class="note">Mostrando 80 de ${tracks.length} músicas. Digite mais um pedaço do nome para afinar a busca.</p>`;
   }
@@ -617,7 +695,7 @@ function buildPool() {
   });
   return pool;
 }
-const entryOf = (it, idx) => ({key: it.id + ':' + idx, itemId: it.id, t: it.tracks[idx].t, pos: it.tracks[idx].pos, artist: it.artist, album: it.album, format: it.format, loc: it.location || ''});
+const entryOf = (it, idx) => ({key: it.id + ':' + idx, itemId: it.id, t: it.tracks[idx].t, pos: it.tracks[idx].pos, artist: it.tracks[idx].a || it.artist, album: it.album, format: it.format, loc: it.location || ''});
 function spreadArtists(list) {
   const rest = list.slice(), out = [];
   while (rest.length) {
@@ -646,15 +724,18 @@ function openDetail(id, hlIdx) {
   const it = state.items.find(x => x.id === id); if (!it) return;
   const f = FORMATS[it.format];
   let lastSide = '', trk = '';
+  const plist = photoList(it);
+  const thumbs = plist.length > 1 ? `<div class="thumbs" role="group" aria-label="Fotos do item">${plist.map(({i}) =>
+    `<button type="button" class="thumb" data-a="gal" data-id="${esc(it.id)}" data-i="${i}" aria-pressed="${i === plist[0].i}" aria-label="Ver foto: ${PHOTO_LABELS[i]}">${imgTag(photoURL(it, i), '')}<span>${PHOTO_LABELS[i]}</span></button>`).join('')}</div>` : '';
   it.tracks.forEach((tr, i) => {
     const side = /^[A-D]/.test(tr.pos) ? tr.pos[0] : '';
     if (side && side !== lastSide) { trk += `<li class="side">Lado ${side}</li>`; lastSide = side; }
-    trk += `<li ${hlIdx === i ? 'class="hl" id="hlrow"' : ''}><span class="pos">${esc(tr.pos)}</span><span>${esc(tr.t)}</span></li>`;
+    trk += `<li ${hlIdx === i ? 'class="hl" id="hlrow"' : ''}><span class="pos">${esc(tr.pos)}</span><span>${esc(tr.t)}${tr.a ? `<small class="ta">${esc(tr.a)}</small>` : ''}</span></li>`;
   });
   openSheet(`
     <div class="shtop"><button class="icon" data-a="close" aria-label="Voltar">${ic('voltar')}</button><h2>${f.name}</h2><span></span></div>
     <div class="shbody" style="--fc:${f.color}">
-      <div class="hero"><div class="frame">${cover(it)}</div>
+      <div class="hero"><div class="frame" id="heroimg">${cover(it)}</div>${thumbs}
         <div class="ttl"><h1>${esc(it.album)}</h1><span class="by">${esc(it.artist)}</span>
           ${it.value != null ? `<div style="margin-top:8px"><span class="tag">${brl(it.value)}</span></div>` : ''}</div></div>
       <div class="facts">
@@ -677,39 +758,53 @@ function genreChipsHTML(selected, extra = []) {
   const set = new Set([...BASE_GENRES, ...allGenres().map(g => g[0]), ...extra, ...selected]);
   return [...set].map(g => `<button type="button" class="chip" data-a="fgenre" data-v="${esc(g)}" aria-pressed="${selected.includes(g)}">${esc(g)}</button>`).join('');
 }
+function slotHTML(i) {
+  const bl = draft.photos[i], url = bl ? URL.createObjectURL(bl) : null;
+  if (url) draft._urls.push(url);
+  const hint = ['Capa (frente)', 'Contracapa (verso)', 'Encarte, selo ou detalhe', 'Encarte, selo ou detalhe'][i];
+  return `<div class="slot"><div class="slot-lbl">${PHOTO_LABELS[i]}</div>
+    <div class="frame">${bl ? `<div class="cover">${imgTag(url, 'Foto: ' + PHOTO_LABELS[i])}</div>` : `<div class="drop">${hint}</div>`}</div>
+    <div class="slot-btns">
+      <label class="btn sm" style="grid-column:1/-1">${ic('camera', 18)}Fotografar<input class="vh" type="file" accept="image/*" capture="environment" data-in="photo" data-slot="${i}" aria-label="Fotografar: ${PHOTO_LABELS[i]}"></label>
+      <label class="btn ghost sm" style="grid-column:${bl ? '1/2' : '1/-1'}" title="Escolher da galeria">${ic('img', 18)}${bl ? '' : 'Galeria'}<input class="vh" type="file" accept="image/*" data-in="photo" data-slot="${i}" aria-label="Escolher da galeria: ${PHOTO_LABELS[i]}"></label>
+      ${bl ? `<button type="button" class="btn ghost sm" data-a="pcrop" data-slot="${i}" title="Recortar ou girar" aria-label="Recortar ou girar: ${PHOTO_LABELS[i]}">${ic('recorte', 18)}</button>
+      <button type="button" class="btn ghost sm" data-a="prm" data-slot="${i}" title="Remover foto" aria-label="Remover foto: ${PHOTO_LABELS[i]}">${ic('fechar', 18)}</button>` : ''}
+    </div></div>`;
+}
 function photoAreaHTML() {
-  const has = draft.photo;
-  const url = has ? URL.createObjectURL(draft.photo) : null;
-  if (draft._url) URL.revokeObjectURL(draft._url);
-  draft._url = url;
-  return `<div class="frame">${has ? `<div class="cover"><img src="${url}" alt="Foto escolhida"></div>` : `<div class="drop">Fotografe a capa do seu achado. A foto fica guardada só neste aparelho.</div>`}</div>
-    <div class="btnrow">
-      <label class="btn">${ic('camera', 20)}Fotografar<input class="vh" type="file" accept="image/*" capture="environment" data-in="photo"></label>
-      <label class="btn ghost">${ic('img', 20)}Galeria<input class="vh" type="file" accept="image/*" data-in="photo"></label>
-      ${has ? `<button type="button" class="btn ghost" data-a="rmphoto">Remover foto</button>` : ''}</div>`;
+  (draft._urls || []).forEach(u => URL.revokeObjectURL(u)); draft._urls = [];
+  const n = Math.max(2, draft.slots || 2);
+  let h = `<div class="photos">${Array.from({length: n}, (_, i) => slotHTML(i)).join('')}</div>`;
+  if (n < 4) h += `<button type="button" class="btn ghost addp" data-a="padd">+ Foto extra (encarte, selo)</button>`;
+  return h + `<p class="hint" style="margin-top:8px">Fotografe a frente e o verso: o verso ajuda a identificar o disco e traz o código de barras. Depois da foto, você ajusta o recorte. As fotos ficam só neste aparelho.</p>`;
 }
 function openForm(it) {
-  draft = it ? {...it, genres: [...it.genres]} : {format: 'vinil', genres: [], photo: null, tracks: []};
+  draft = it ? {...it, genres: [...it.genres], photos: [...(it.photos || [])], slots: Math.max(2, (it.photos || []).length)} : {format: 'vinil', genres: [], photos: [], tracks: [], slots: 2};
   const d = draft;
   openSheet(`
     <div class="shtop"><button class="icon" data-a="close" aria-label="Fechar">${ic('fechar')}</button><h2>${d.id ? 'Editar achado' : 'Registrar achado'}</h2><span></span></div>
     <form class="shbody" id="f" novalidate autocomplete="off">
-      <div class="photo" id="photoArea">${photoAreaHTML()}</div>
-      <div class="fld"><span class="lbl">Formato</span><div class="seg" id="seg">
-        ${Object.entries(FORMATS).map(([k, v]) => `<button type="button" data-a="fmt" data-v="${k}" style="--fc:${v.color}" aria-pressed="${d.format === k}">${ic(k, 26)}${v.name}</button>`).join('')}</div></div>
-      <div class="fld"><label for="f-artist">Artista</label><input id="f-artist" name="artist" required value="${esc(d.artist)}" autocapitalize="words"></div>
-      <div class="fld"><label for="f-album">Álbum</label><input id="f-album" name="album" required value="${esc(d.album)}" autocapitalize="words"></div>
+      <div class="pa" id="photoArea">${photoAreaHTML()}</div>
       <div class="auto" id="auto">
-        <h3>${ic('busca', 20)}Preencher pela internet</h3>
-        <p class="hint">Digite o artista e/ou o álbum acima e busque pelo nome. Ou use o código de barras, na traseira da capa.</p>
-        <button type="button" class="btn" data-a="mbsearch">${ic('busca', 18)}Buscar pelo nome</button>
+        <h3>${ic('busca', 20)}Preencher automaticamente</h3>
+        <p class="hint">Fotografe a frente e o verso e escolha como identificar o disco. Você só confere e guarda.</p>
+        <button type="button" class="btn" data-a="aiid">${ic('camera', 18)}Identificar pelas fotos</button>
+        ${aiCfg().key ? '' : '<p class="hint" id="aihint">Para ler as fotos com IA, toque em “Configurar” abaixo (opcional).</p>'}
+        <div class="bc q"><input id="f-q" placeholder="Disco, artista ou novela" aria-label="Buscar pelo nome do disco, artista ou novela" autocomplete="off" enterkeyhint="search">
+          <button type="button" class="btn ghost" data-a="mbsearch">Buscar</button></div>
         <div class="bc"><input id="f-bc" inputmode="numeric" maxlength="14" placeholder="Cód. de barras" aria-label="Código de barras" autocomplete="off">
           <button type="button" class="btn ghost" data-a="bcsearch">Buscar</button>
           ${HAS_BD ? `<button type="button" class="btn ghost" data-a="bcscan" aria-label="Escanear código de barras com a câmera" title="Escanear">${ic('camera', 20)}</button>` : ''}</div>
         ${HAS_BD ? '' : '<p class="hint">Este navegador não escaneia códigos de barras: digite os números. No Chrome do Android o escaneamento funciona.</p>'}
+        <button type="button" class="btn ghost" data-a="paste">Colar informações (Google, Discogs, texto…)</button>
         <div id="mbres" aria-live="polite"></div>
-        <p class="hint">Dados do MusicBrainz e capas do Cover Art Archive, projetos abertos. Só o texto ou o código buscado sai do seu aparelho; sua coleção continua só aqui.</p>
+        <p class="hint">A busca consulta o MusicBrainz e, se você ligar, o Discogs. Capas do Cover Art Archive. Só o texto, o código ou as fotos que você mandar identificar saem do aparelho; sua coleção continua só aqui.</p>
+        <button type="button" class="linkbtn" data-a="aiset">Configurar a identificação automática</button>
       </div>
+      <div class="fld"><span class="lbl">Formato</span><div class="seg" id="seg">
+        ${Object.entries(FORMATS).map(([k, v]) => `<button type="button" data-a="fmt" data-v="${k}" style="--fc:${v.color}" aria-pressed="${d.format === k}">${ic(k, 26)}${v.name}</button>`).join('')}</div></div>
+      <div class="fld"><label for="f-artist">Artista</label><input id="f-artist" name="artist" required value="${esc(d.artist)}" autocapitalize="words"></div>
+      <div class="fld"><label for="f-album">Álbum</label><input id="f-album" name="album" required value="${esc(d.album)}" autocapitalize="words"></div>
       <div class="two">
         <div class="fld"><label for="f-year">Ano</label><input id="f-year" name="year" type="number" inputmode="numeric" min="1900" max="2100" value="${d.year || ''}"></div>
         <div class="fld"><label for="f-value">Valor estimado (R$)</label><input id="f-value" name="value" inputmode="decimal" value="${d.value != null ? String(d.value).replace('.', ',') : ''}"></div>
@@ -732,6 +827,7 @@ async function saveForm(form) {
   const artist = (fd.get('artist') || '').trim(), album = (fd.get('album') || '').trim();
   if (!artist || !album) { toast('Faltou o artista ou o álbum. Eles ajudam a achar o disco depois.'); (artist ? $('#f-album') : $('#f-artist')).focus(); return; }
   const v = String(fd.get('value') || '').replace(/\./g, '').replace(',', '.').trim();
+  const photos = (d.photos || []).slice(0, 4); while (photos.length && !photos[photos.length - 1]) photos.pop();
   const it = {
     id: d.id || uid(), createdAt: d.createdAt || Date.now(), updatedAt: Date.now(),
     format: d.format, artist, album,
@@ -739,7 +835,7 @@ async function saveForm(form) {
     genres: d.genres, condition: fd.get('condition') || '',
     value: v !== '' && !isNaN(parseFloat(v)) ? parseFloat(v) : null,
     location: (fd.get('location') || '').trim(), notes: (fd.get('notes') || '').trim(),
-    tracks: parseTracks(fd.get('tracks')), photo: d.photo || null, example: !!d.example
+    tracks: parseTracks(fd.get('tracks')), photos, photo: photos.find(Boolean) || null, example: !!d.example
   };
   try { await DB.put('items', it); } catch (e) { toast('Não consegui guardar no aparelho. Confira o espaço livre e tente de novo.'); return; }
   const k = state.items.findIndex(x => x.id === it.id);
@@ -762,6 +858,7 @@ function openMenu() {
       <div class="stat"><div><b>${n}</b><small>achados</small></div><div><b>${tr}</b><small>músicas</small></div><div><b>${brl(val)}</b><small>valor estimado</small></div></div>
       <div class="menu-list">
         ${deferredInstall && !standalone ? `<button class="btn" data-a="install">${ic('baixar', 18)}Instalar o app</button>` : ''}
+        <button class="btn ghost" data-a="aiset">${ic('busca', 18)}Identificação automática</button>
         <button class="btn ghost" data-a="export">${ic('enviar', 18)}Exportar cópia de segurança</button>
         <button class="btn ghost" data-a="import">${ic('baixar', 18)}Importar cópia de segurança</button>
         ${hasEx ? `<button class="btn ghost" data-a="rmexamples">Remover itens de exemplo</button>` : (!n ? `<button class="btn ghost" data-a="examples">Carregar itens de exemplo</button>` : '')}
@@ -788,7 +885,10 @@ function cleanItem(r) {
   if (!r || typeof r !== 'object') return null;
   const artist = str(r.artist, 150).trim(), album = str(r.album, 150).trim();
   if (!artist || !album) return null;
-  const tracks = (Array.isArray(r.tracks) ? r.tracks : []).slice(0, 300).map(t => ({pos: str(t && t.pos, 6) || '?', t: str(t && t.t, 200).trim()})).filter(t => t.t);
+  const tracks = (Array.isArray(r.tracks) ? r.tracks : []).slice(0, 300).map(t => { const o = {pos: str(t && t.pos, 6) || '?', t: str(t && t.t, 200).trim()}; const a = str(t && t.a, 150).trim(); if (a) o.a = a; return o; }).filter(t => t.t);
+  let photos = Array.isArray(r.photos) ? r.photos.slice(0, 4).map(dataURLToBlob) : [];
+  if (!photos.some(Boolean) && r.photo) photos = [dataURLToBlob(r.photo)];
+  while (photos.length && !photos[photos.length - 1]) photos.pop();
   const genres = (Array.isArray(r.genres) ? r.genres : []).slice(0, 20).map(g => str(g, 30).trim()).filter(Boolean);
   return {
     id: safeId(r.id), createdAt: Number.isFinite(r.createdAt) ? r.createdAt : Date.now(), updatedAt: Date.now(),
@@ -797,7 +897,7 @@ function cleanItem(r) {
     genres, condition: CONDS.some(c => c[0] === r.condition) ? r.condition : '',
     value: typeof r.value === 'number' && isFinite(r.value) && r.value >= 0 && r.value < 1e9 ? r.value : null,
     location: str(r.location, 100).trim(), notes: str(r.notes, 2000).trim(), tracks,
-    photo: dataURLToBlob(r.photo), example: r.example === true
+    photos, photo: photos.find(Boolean) || null, example: r.example === true
   };
 }
 function cleanSetlist(l) {
@@ -812,7 +912,7 @@ function cleanSetlist(l) {
 // ---------- backup ----------
 const blobToDataURL = b => new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(b); });
 async function exportBackup() {
-  const items = await Promise.all(state.items.map(async i => ({...i, photo: i.photo ? await blobToDataURL(i.photo) : null})));
+  const items = await Promise.all(state.items.map(async i => ({...i, photo: null, photos: await Promise.all((i.photos || []).map(b => b ? blobToDataURL(b) : null))})));
   const json = JSON.stringify({app: 'garimpo', v: 1, exportedAt: new Date().toISOString(), items, setlists: state.setlists}, null, 1);
   const name = `garimpo-sound-backup-${new Date().toISOString().slice(0, 10)}.json`;
   const file = new File([json], name, {type: 'application/json'});
@@ -871,7 +971,7 @@ function mbFormat(media) {
 const GMAP = [[/bossa/i,'Bossa Nova'],[/samba|pagode/i,'Samba'],[/\bmpb\b|brazilian popular/i,'MPB'],[/forr[oó]/i,'Forró'],[/hip.?hop|\brap\b/i,'Hip hop'],
   [/electro|house|techno|ambient|trance/i,'Eletrônica'],[/classical|opera|baroque/i,'Clássica'],[/metal/i,'Metal'],[/punk/i,'Punk'],[/rock/i,'Rock'],
   [/jazz|bebop/i,'Jazz'],[/blues/i,'Blues'],[/soul|r&b|rhythm and blues/i,'Soul'],[/funk/i,'Funk'],[/disco/i,'Disco'],[/reggae|\bska\b/i,'Reggae'],
-  [/country/i,'Country'],[/folk/i,'Folk'],[/gospel/i,'Gospel'],[/pop/i,'Pop']];
+  [/country/i,'Country'],[/folk/i,'Folk'],[/gospel/i,'Gospel'],[/soundtrack|stage & screen|\bscore\b/i,'Trilha sonora'],[/pop/i,'Pop']];
 function mapGenres(names) {
   const out = [];
   for (const n of names) {
@@ -882,50 +982,130 @@ function mapGenres(names) {
   }
   return out;
 }
-function mbTracks(media) {
-  const out = []; let n = 0;
+const cleanName = n => {
+  n = String(n || '').replace(/\s*\(\d+\)\s*$/, '').trim();
+  return /^various( artists)?$/i.test(n) || norm(n) === 'varios artistas' ? 'Vários artistas' : n;
+};
+function mbTracks(media, relArtist = '') {
+  const out = []; let n = 0; const various = relArtist === 'Vários artistas';
   (media || []).forEach(m => (m.tracks || []).forEach(t => {
     n++;
     const num = String(t.number || '');
     const pos = /^[A-Da-d]\d{1,2}$/.test(num) ? num.toUpperCase() : String(n);
     const title = String(t.title || (t.recording && t.recording.title) || '').trim();
-    if (title) out.push({pos, t: title.slice(0, 200)});
+    if (!title) return;
+    const o = {pos, t: title.slice(0, 200)};
+    const ta = cleanName(acName(t['artist-credit']));
+    if (ta && (various || (relArtist && norm(ta) !== norm(relArtist)))) o.a = ta.slice(0, 150);
+    out.push(o);
   }));
   return out.slice(0, 300);
 }
 const mbMsg = html => { const b = $('#mbres'); if (b) b.innerHTML = html; };
-function mbRender() {
-  if (!mbList.length) return mbMsg('<p class="note">Não encontrei esse disco na base. Tente só o nome do artista, outra grafia ou o código de barras. Discos raros às vezes não estão lá: nesse caso, é só preencher à mão.</p>');
+const STOP = new Set(['de', 'da', 'do', 'das', 'dos', 'the', 'of', 'and', 'for', 'com', 'por', 'para', 'que', 'uma', 'uns', 'em', 'no', 'na', 'os', 'as']);
+function toks(text) {
+  const t = norm(text).replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(Boolean);
+  const keep = t.filter(x => x.length > 2 && !STOP.has(x));
+  return (keep.length ? keep : t).slice(0, 8);
+}
+async function mbFind(query) {
+  const data = await mb(`release/?query=${encodeURIComponent(query)}&limit=20`);
+  return (data.releases || []).map(r => ({
+    src: 'mb', id: r.id, rg: r['release-group'] && r['release-group'].id, title: r.title || '', artist: cleanName(acName(r['artist-credit'])),
+    date: String(r.date || '').slice(0, 4), country: r.country || '',
+    label: ((r['label-info'] || []).map(l => l.label && l.label.name).filter(Boolean)[0]) || '',
+    fmt: mbFormat(r.media), n: r['track-count'] || 0, score: r.score || 0
+  })).filter(r => r.id && r.title);
+}
+// busca livre: cada palavra precisa estar no título OU no artista (assim “novela” + “trilha” + nome funcionam)
+async function mbFree(text) {
+  const t = toks(text); if (!t.length) return [];
+  let res = await mbFind(t.map(x => `(release:${x} OR artist:${x})`).join(' AND '));
+  if (!res.length && t.length > 1) res = await mbFind(t.map(x => `release:${x} OR artist:${x}`).join(' OR '));
+  return res;
+}
+// ---- Discogs (opcional, com token gratuito do próprio usuário) ----
+async function dg(path) {
+  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 15000);
+  try {
+    const r = await fetch('https://api.discogs.com/' + path + (path.includes('?') ? '&' : '?') + 'token=' + encodeURIComponent(LS.get('gs-discogs') || ''), {signal: ctl.signal, credentials: 'omit', referrerPolicy: 'no-referrer'});
+    if (r.status === 401) throw new Error('dg-auth');
+    if (r.status === 429) throw new Error('limite');
+    if (!r.ok) throw new Error('http');
+    return await r.json();
+  } finally { clearTimeout(t); }
+}
+function dgFormat(arr) { const f = (arr || []).join(' '); if (/cassette/i.test(f)) return 'fita'; if (/vinyl|\blp\b/i.test(f)) return 'vinil'; if (/\bcd\b/i.test(f)) return 'cd'; return null; }
+const dgJoin = a => (a || []).map(x => cleanName(x && x.name)).filter(Boolean).join(' & ');
+async function dgFind(params) {
+  const q = new URLSearchParams({type: 'release', per_page: '15', ...params}).toString();
+  const data = await dg('database/search?' + q);
+  return (data.results || []).map(r => {
+    const full = String(r.title || ''), k = full.indexOf(' - ');
+    return {src: 'dg', id: String(r.id), title: k > 0 ? full.slice(k + 3).trim() : full, artist: k > 0 ? cleanName(full.slice(0, k)) : '',
+      date: String(r.year || ''), country: r.country || '', label: (r.label || [])[0] || '', fmt: dgFormat(r.format), n: 0, score: 0};
+  }).filter(r => r.id && r.title);
+}
+async function dgDetails(r) {
+  const x = await dg(`releases/${encodeURIComponent(r.id)}`);
+  const relArtist = dgJoin(x.artists) || r.artist, various = relArtist === 'Vários artistas';
+  let n = 0;
+  const tracks = (x.tracklist || []).filter(t => (t.type_ || 'track') === 'track' && t.title).slice(0, 300).map(t => {
+    n++;
+    const pp = String(t.position || '').trim(), pos = /^[A-Da-d]\d{1,2}$/.test(pp) ? pp.toUpperCase() : String(n);
+    const o = {pos, t: String(t.title).trim().slice(0, 200)}, ta = dgJoin(t.artists);
+    if (ta && (various || norm(ta) !== norm(relArtist))) o.a = ta.slice(0, 150);
+    return o;
+  });
+  return {id: String(x.id || r.id), artist: relArtist, album: String(x.title || r.title), year: String(x.year || r.date || ''),
+    format: dgFormat((x.formats || []).map(f => f.name)) || r.fmt, genres: mapGenres([...(x.genres || []), ...(x.styles || [])]),
+    tracks, label: ((x.labels || [])[0] || {}).name || r.label || ''};
+}
+async function mbDetails(r) {
+  const rel = await mb(`release/${encodeURIComponent(r.id)}?inc=recordings+artist-credits+labels+release-groups`);
+  let genres = [];
+  const rgid = (rel['release-group'] && rel['release-group'].id) || r.rg;
+  if (rgid) { try { const g = await mb(`release-group/${encodeURIComponent(rgid)}?inc=genres`); genres = (g.genres || []).sort((a, b) => (b.count || 0) - (a.count || 0)).map(x => x.name); } catch (e) {} }
+  const label = ((rel['label-info'] || []).map(l => l.label && l.label.name).filter(Boolean)[0]) || r.label;
+  const relArtist = cleanName(acName(rel['artist-credit'])) || r.artist;
+  return {id: rel.id || r.id, artist: relArtist, album: rel.title || r.title, year: String(rel.date || r.date || '').slice(0, 4),
+    format: mbFormat(rel.media) || r.fmt, genres: mapGenres(genres), tracks: mbTracks(rel.media, relArtist), label};
+}
+// ---- lista de resultados ----
+function mbRender(note = '') {
+  if (!mbList.length) return mbMsg('<p class="note">Não encontrei esse disco na base. Tente só o nome do artista ou da novela, outra grafia ou o código de barras. Discos raros às vezes não estão lá: nesse caso, use “Identificar pelas fotos” ou preencha à mão.</p>' + note);
   mbMsg(`<span class="lbl">${mbList.length} ${mbList.length === 1 ? 'edição encontrada' : 'edições encontradas'}. Toque na que for igual à sua:</span>` +
     mbList.map((r, i) => `<button type="button" class="row" data-a="mbpick" data-i="${i}" style="--fc:${r.fmt ? FORMATS[r.fmt].color : 'var(--gold)'}">
       <div class="tx"><span class="t1">${esc(r.title)}</span><span class="t2">${esc([r.artist, r.date, r.country, r.label].filter(Boolean).join(', '))}</span></div>
-      <div class="end">${r.fmt ? ic(r.fmt, 18) : ''}<span>${r.n ? r.n + ' faixas' : ''}</span></div></button>`).join(''));
+      <div class="end">${r.fmt ? ic(r.fmt, 18) : ''}<span>${r.n ? r.n + ' faixas' : ''}</span><span class="src">${r.src === 'dg' ? 'Discogs' : 'MusicBrainz'}</span></div></button>`).join('') + note);
 }
-async function mbSearch(query, auto = false) {
+let searchSeq = 0;
+async function searchAll(kind, value) {
   if (!navigator.onLine) return mbMsg('<p class="note">Sem internet no momento. Você pode preencher à mão e buscar depois, quando estiver online.</p>');
+  const my = ++searchSeq, dgOn = !!LS.get('gs-discogs');
   mbMsg('<p class="note">Procurando seu disco…</p>');
-  try {
-    const data = await mb(`release/?query=${encodeURIComponent(query)}&limit=20`);
-    const pref = draft && draft.format;
-    mbList = (data.releases || []).map(r => ({
-      id: r.id, rg: r['release-group'] && r['release-group'].id, title: r.title || '', artist: acName(r['artist-credit']),
-      date: String(r.date || '').slice(0, 4), country: r.country || '',
-      label: ((r['label-info'] || []).map(l => l.label && l.label.name).filter(Boolean)[0]) || '',
-      fmt: mbFormat(r.media), n: r['track-count'] || 0, score: r.score || 0
-    })).filter(r => r.id && r.title);
-    mbList.sort((a, b) => ((b.fmt === pref) - (a.fmt === pref)) || b.score - a.score);
-    mbList = mbList.slice(0, 12);
-    if (auto && mbList.length === 1) return mbPick(0);
-    mbRender();
-  } catch (e) {
-    mbMsg(`<p class="note">${e.message === 'limite' ? 'A base pediu uma pausa. Espere alguns segundos e tente de novo.' : 'A internet falhou agora. Tente de novo ou preencha à mão.'}</p>`);
+  let mbP, dgP;
+  if (kind === 'barcode') {
+    const v = [value]; if (value.length === 12) v.push('0' + value); if (value.length === 13 && value[0] === '0') v.push(value.slice(1));
+    mbP = mbFind(`barcode:(${v.join(' OR ')})`); dgP = dgOn ? dgFind({barcode: value}) : Promise.resolve([]);
+  } else { mbP = mbFree(value); dgP = dgOn ? dgFind({q: value}) : Promise.resolve([]); }
+  const [a, b] = await Promise.allSettled([mbP, dgP]);
+  if (my !== searchSeq) return;
+  const A_ = a.status === 'fulfilled' ? a.value : [], B_ = b.status === 'fulfilled' ? b.value : [];
+  if (a.status === 'rejected' && (b.status === 'rejected' || !dgOn)) {
+    return mbMsg(`<p class="note">${a.reason && a.reason.message === 'limite' ? 'A base pediu uma pausa. Espere alguns segundos e tente de novo.' : 'A internet falhou agora. Tente de novo ou preencha à mão.'}</p>`);
   }
+  let note = '';
+  if (b.status === 'rejected') note = `<p class="hint">${b.reason && b.reason.message === 'dg-auth' ? 'O token do Discogs não foi aceito. Confira em “Configurar a identificação automática”.' : 'O Discogs não respondeu agora; mostrei só o MusicBrainz.'}</p>`;
+  const pref = draft && draft.format;
+  mbList = [...B_, ...A_].map((r, i) => ({...r, o: i})).sort((x, y) => ((y.fmt === pref) - (x.fmt === pref)) || x.o - y.o).slice(0, 15);
+  if (kind === 'barcode' && mbList.length === 1) return pickResult(0);
+  mbRender(note);
 }
 async function bcSearch(raw) {
   const code = String(raw || '').replace(/\D/g, '');
   if (!/^\d{8,14}$/.test(code)) return toast('O código de barras tem de 8 a 14 números. Confira e tente de novo.');
-  const v = [code]; if (code.length === 12) v.push('0' + code); if (code.length === 13 && code[0] === '0') v.push(code.slice(1));
-  await mbSearch(`barcode:(${v.join(' OR ')})`, true);
+  await searchAll('barcode', code);
 }
 async function fetchCover(id) {
   const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 12000);
@@ -945,41 +1125,246 @@ function addGenre(g) {
     $('#gbox').insertAdjacentHTML('beforeend', `<button type="button" class="chip" data-a="fgenre" data-v="${esc(g)}" aria-pressed="true">${esc(g)}</button>`);
   }
 }
-async function applyRelease(m) {
+// aplica dados identificados (internet, IA ou texto colado) no formulário, sem apagar o que já foi digitado quando vier vazio
+async function applyMeta(m, opts = {}) {
   if (!draft || !$('#f')) return;
-  const set = (sel, v) => { const e = $(sel); if (e) e.value = v; };
+  const set = (sel, v) => { const e = $(sel); if (e && v !== undefined && v !== null && String(v) !== '') e.value = v; };
   set('#f-artist', m.artist); set('#f-album', m.album);
-  if (/^\d{4}$/.test(m.year)) set('#f-year', m.year);
+  if (/^\d{4}$/.test(String(m.year || ''))) set('#f-year', m.year);
   if (m.format) { draft.format = m.format; document.querySelectorAll('#seg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === m.format)); }
-  m.genres.forEach(addGenre);
-  if (m.tracks.length) {
+  (m.genres || []).forEach(addGenre);
+  if ((m.tracks || []).length) {
     const ta = $('#f-tracks');
     if (!ta.value.trim() || await dialog({msg: 'Substituir as faixas digitadas pela lista encontrada?', ok: 'Substituir'})) ta.value = tracksToText(m.tracks);
   }
-  const nt = $('#f-notes'); if (m.label && !nt.value.trim()) nt.value = 'Gravadora: ' + m.label;
+  const nt = $('#f-notes'), extra = [m.notes, m.label ? 'Gravadora: ' + m.label : ''].filter(Boolean).join('\n');
+  if (extra && !nt.value.trim()) nt.value = extra;
   let capa = false;
-  if (!draft.photo) { const b = await fetchCover(m.id); if (b && draft) { draft.photo = b; $('#photoArea').innerHTML = photoAreaHTML(); capa = true; } }
-  toast(capa ? 'Achei! Dados e capa preenchidos' : 'Achei! Dados preenchidos');
+  if (opts.coverId && !draft.photos[0]) { const b = await fetchCover(opts.coverId); if (b && draft) { draft.photos[0] = b; $('#photoArea').innerHTML = photoAreaHTML(); capa = true; } }
+  toast(opts.toast || (capa ? 'Achei! Dados e capa preenchidos' : 'Achei! Dados preenchidos'));
 }
-async function mbPick(i) {
+async function pickResult(i) {
   const r = mbList[i]; if (!r) return;
   mbMsg('<p class="note">Buscando as faixas…</p>');
   try {
-    const rel = await mb(`release/${encodeURIComponent(r.id)}?inc=recordings+artist-credits+labels+release-groups`);
-    let genres = [];
-    const rgid = (rel['release-group'] && rel['release-group'].id) || r.rg;
-    if (rgid) { try { const g = await mb(`release-group/${encodeURIComponent(rgid)}?inc=genres`); genres = (g.genres || []).sort((a, b) => (b.count || 0) - (a.count || 0)).map(x => x.name); } catch (e) {} }
-    const label = ((rel['label-info'] || []).map(l => l.label && l.label.name).filter(Boolean)[0]) || r.label;
-    await applyRelease({
-      id: rel.id || r.id, artist: acName(rel['artist-credit']) || r.artist, album: rel.title || r.title,
-      year: String(rel.date || r.date || '').slice(0, 4), format: mbFormat(rel.media) || r.fmt,
-      genres: mapGenres(genres), tracks: mbTracks(rel.media), label
-    });
+    const meta = r.src === 'dg' ? await dgDetails(r) : await mbDetails(r);
+    await applyMeta(meta, {coverId: r.src === 'mb' ? meta.id : null});
     mbMsg('<p class="note">Pronto! Confira os campos abaixo e guarde o achado.</p>');
   } catch (e) {
     mbRender(); toast(e.message === 'limite' ? 'Espere alguns segundos e tente de novo' : 'Não consegui carregar esse disco. Toque nele de novo.');
   }
 }
+
+// ---------- identificação pelas fotos (IA, com a chave do próprio usuário) ----------
+const AI_MODELS = {eco: 'claude-haiku-5-5', pro: 'claude-sonnet-5-5'};
+const aiCfg = () => ({key: LS.get('gs-akey') || '', model: LS.get('gs-model') === 'pro' ? 'pro' : 'eco', web: LS.get('gs-web') !== '0', dg: LS.get('gs-discogs') || ''});
+let aiResult = null;
+const AI_SYSTEM = `Você é um especialista em discos de vinil, CDs e fitas cassete e ajuda um colecionador brasileiro a catalogar o acervo dele.
+Você receberá fotos de UM item (frente, verso e, às vezes, encarte ou selo). Identifique o item e extraia os dados.
+
+Regras importantes:
+1. Se a lista de faixas estiver impressa e legível em alguma foto, transcreva-a exatamente como está impressa: títulos e, em coletâneas e trilhas de novela, o intérprete de cada faixa. Nesse caso use "tracks_source": "impressa".
+2. Se a lista de faixas não estiver legível e você tiver a ferramenta de busca na web, procure a lista oficial deste lançamento (artista, título, gravadora e número de catálogo ajudam) e use "tracks_source": "web".
+3. Nunca invente faixas de memória. Se não tiver certeza, deixe "tracks" vazio e use "tracks_source": "nenhuma".
+4. Em coletâneas e trilhas sonoras de novela ou filme, use "Vários artistas" como artista do álbum e preencha o intérprete de cada faixa. Escreva o nome da novela ou do filme em "notes".
+5. Lados de vinil e fita usam posições como A1, A2, B1. CDs usam 1, 2, 3.
+6. "format" deve ser "vinil", "cd", "fita" ou null. "year" é o ano de lançamento desta edição, ou null.
+7. Se não conseguir identificar o item, devolva campos vazios e "confidence": "baixa".
+
+Responda SOMENTE com um objeto JSON válido, sem markdown e sem texto antes ou depois, neste formato:
+{"artist":"","album":"","year":null,"format":null,"label":"","genres":[],"tracks":[{"pos":"A1","title":"","artist":""}],"tracks_source":"impressa|web|nenhuma","confidence":"alta|media|baixa","notes":""}
+"genres" aceita até 4 gêneros em português.`;
+function aiError(status, msg) {
+  const e = new Error(msg || 'erro'); e.status = status;
+  if (status === 401) e.code = 'auth'; else if (status === 403) e.code = 'perm'; else if (status === 429) e.code = 'rate';
+  else if (/credit|balance|billing/i.test(msg || '')) e.code = 'credit'; else if (status === 529 || status >= 500) e.code = 'busy'; else e.code = 'other';
+  return e;
+}
+function aiErrMsg(e) {
+  const m = {auth: 'A chave não foi aceita. Confira se copiou inteira (ela começa com sk-ant-).', perm: 'Esta chave não tem permissão para esse modelo. Tente o outro modelo nas configurações.',
+    rate: 'Muitas chamadas seguidas. Espere um minuto e tente de novo.', credit: 'A conta da Anthropic está sem crédito. Adicione saldo no console e tente de novo.',
+    busy: 'O serviço de IA está sobrecarregado agora. Tente de novo em instantes.'};
+  return m[e.code] || (e.name === 'AbortError' || e instanceof TypeError ? 'Não consegui falar com a IA. Confira a internet e tente de novo.' : 'A IA não conseguiu responder agora. Tente de novo.');
+}
+async function callClaude({key, model, system, content, web, maxTokens = 4096}) {
+  const headers = {'x-api-key': key, 'anthropic-version': '2023-06-01', 'content-type': 'application/json', 'anthropic-dangerous-direct-browser-access': 'true'};
+  let messages = [{role: 'user', content}], useWeb = !!web, loops = 0;
+  for (;;) {
+    const body = {model, max_tokens: maxTokens, messages}; if (system) body.system = system;
+    if (useWeb) body.tools = [{type: 'web_search_20250305', name: 'web_search', max_uses: 3}];
+    const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 90000);
+    let r; try { r = await fetch('https://api.anthropic.com/v1/messages', {method: 'POST', headers, body: JSON.stringify(body), signal: ctl.signal, credentials: 'omit', referrerPolicy: 'no-referrer'}); } finally { clearTimeout(t); }
+    if (!r.ok) {
+      let msg = ''; try { const j = await r.json(); msg = (j.error && j.error.message) || ''; } catch (x) {}
+      if (useWeb && r.status === 400 && /web.?search|tool/i.test(msg)) { useWeb = false; continue; }   // pesquisa na web não habilitada: segue sem ela
+      throw aiError(r.status, msg);
+    }
+    const data = await r.json();
+    if (data.stop_reason === 'pause_turn' && ++loops <= 4) { messages = [...messages, {role: 'assistant', content: data.content}]; continue; }
+    return (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+  }
+}
+function parseAIJson(text) {
+  const t = String(text || '').replace(/```(?:json)?/gi, ''), a = t.indexOf('{'), b = t.lastIndexOf('}');
+  if (a < 0 || b <= a) throw new Error('formato');
+  return JSON.parse(t.slice(a, b + 1));
+}
+function cleanAI(o) {
+  const y = parseInt(o.year), tracks = (Array.isArray(o.tracks) ? o.tracks : []).slice(0, 300).map((t, i) => {
+    const pp = str(t && t.pos, 6).trim(), r = {pos: /^[A-Da-d]\d{1,2}$/.test(pp) ? pp.toUpperCase() : String(i + 1), t: str(t && (t.title || t.t), 200).trim()};
+    const a = cleanName(str(t && (t.artist || t.a), 150).trim()); if (a) r.a = a; return r;
+  }).filter(t => t.t);
+  const src = o.tracks_source === 'impressa' ? 'impressa' : o.tracks_source === 'web' ? 'web' : 'memoria';
+  return {artist: cleanName(str(o.artist, 150).trim()), album: str(o.album, 150).trim(), year: y >= 1900 && y <= 2100 ? String(y) : '', format: hasFmt(o.format) ? o.format : null,
+    label: str(o.label, 100).trim(), genres: (Array.isArray(o.genres) ? o.genres : []).slice(0, 4).map(g => str(g, 30).trim()).filter(Boolean), tracks,
+    source: src, confidence: ['alta', 'media', 'baixa'].includes(o.confidence) ? o.confidence : 'media', notes: str(o.notes, 300).trim()};
+}
+const blobToB64 = async b => (await blobToDataURL(b)).split(',')[1];
+async function aiIdentify(force) {
+  const c = aiCfg();
+  if (!c.key) return openAISettings();
+  const photos = (draft.photos || []).map((b, i) => b ? {b, i} : null).filter(Boolean);
+  if (!photos.length) return toast('Tire pelo menos a foto da frente (e, se puder, a do verso) para eu ler.');
+  if (!navigator.onLine) return mbMsg('<p class="note">Sem internet no momento. Você pode preencher à mão e identificar depois, quando estiver online.</p>');
+  const mk = force || c.model;
+  mbMsg(`<p class="note">Lendo as fotos com a IA${c.web ? ' e pesquisando na web' : ''}… pode levar de 10 a 60 segundos.</p>`);
+  try {
+    const content = [];
+    for (const {b, i} of photos) { content.push({type: 'text', text: `Foto ${i + 1} (${PHOTO_LABELS[i].toLowerCase()}):`}); content.push({type: 'image', source: {type: 'base64', media_type: 'image/jpeg', data: await blobToB64(b)}}); }
+    const hints = [['artista', $('#f-artist') && $('#f-artist').value.trim()], ['álbum', $('#f-album') && $('#f-album').value.trim()], ['código de barras', $('#f-bc') && $('#f-bc').value.trim()], ['formato', draft.format && FORMATS[draft.format].name]].filter(h => h[1]);
+    content.push({type: 'text', text: (hints.length ? `Dados que o usuário já informou (podem estar errados): ${hints.map(h => h[0] + ' = ' + h[1]).join('; ')}.\n` : '') + 'Identifique o item e responda apenas com o JSON.'});
+    const raw = await callClaude({key: c.key, model: AI_MODELS[mk], system: AI_SYSTEM, content, web: c.web});
+    aiResult = {...cleanAI(parseAIJson(raw)), mk};
+    aiCard();
+  } catch (e) {
+    mbMsg(`<p class="note">${e.message === 'formato' || e instanceof SyntaxError ? 'A IA respondeu em um formato inesperado. Tente de novo.' : esc(aiErrMsg(e))}</p>`);
+  }
+}
+function aiCard() {
+  const r = aiResult; if (!r) return;
+  const srcTxt = {impressa: 'lidas da lista impressa no disco', web: 'encontradas na web: confira', memoria: 'sem fonte confirmada: confira com cuidado'}[r.source];
+  const none = !r.album && !r.artist;
+  mbMsg(`<div class="aicard">
+    <span class="tagc">Leitura da IA</span>
+    <p class="t1">${esc(r.album || '(álbum não identificado)')}</p>
+    <p class="t2">${esc(r.artist || '(artista não identificado)')}${r.year ? ', ' + r.year : ''}${r.format ? ', ' + FORMATS[r.format].name : ''}</p>
+    <p class="note">${r.tracks.length ? `${r.tracks.length} ${r.tracks.length === 1 ? 'faixa' : 'faixas'}, ${srcTxt}.` : 'Nenhuma faixa encontrada.'} Confiança ${r.confidence === 'media' ? 'média' : r.confidence}.</p>
+    ${r.notes ? `<p class="note">${esc(r.notes)}</p>` : ''}
+    <div class="btnrow">
+      ${none ? '' : '<button type="button" class="btn" data-a="aiuse">Usar estes dados</button>'}
+      ${r.mk === 'eco' ? '<button type="button" class="btn ghost" data-a="aipro">Tentar com o modelo preciso</button>' : ''}
+      <button type="button" class="btn ghost" data-a="aino">Descartar</button></div></div>`);
+}
+
+// ---------- configurações da identificação automática ----------
+function openAISettings() {
+  const c = aiCfg(), d = $('#dlg');
+  d.innerHTML = `<div class="box big" role="dialog" aria-modal="true" aria-label="Identificação automática">
+    <p><b>Identificação automática</b></p>
+    <p class="hint">Tudo aqui é opcional. Quanto mais você ligar, menos precisa digitar.</p>
+    <details ${c.key ? '' : 'open'}><summary>1. Ler as fotos com IA (Claude)</summary>
+      <p class="hint">A IA olha a frente e o verso do disco, inclusive a lista de faixas impressa, e pode pesquisar na web, como o Google Lens. Você usa a sua própria chave da Anthropic. As fotos só são enviadas quando você toca em “Identificar pelas fotos”.</p>
+      <label class="lbl" for="set-akey">Chave da API</label><input id="set-akey" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="sk-ant-…" value="${esc(c.key)}">
+      <label class="lbl" for="set-model">Modelo</label>
+      <select id="set-model" class="sel"><option value="eco" ${c.model === 'eco' ? 'selected' : ''}>Econômico (Claude Haiku 5.5)</option><option value="pro" ${c.model === 'pro' ? 'selected' : ''}>Mais preciso (Claude Sonnet 5.5)</option></select>
+      <label class="chk"><input type="checkbox" id="set-web" ${c.web ? 'checked' : ''}><span>Pesquisar na web para completar as faixas</span></label>
+      <p class="hint">Custo aproximado por item, cobrado pela Anthropic e não pelo app: modelo econômico, menos de 1 centavo de dólar; modelo preciso, cerca de 4 centavos; cada pesquisa na web acrescenta 1 centavo (no máximo 3). Valores estimados: confira os preços atuais em claude.com/pricing.</p>
+      <details><summary>Como criar a chave</summary><ol class="hint">
+        <li>Entre em <b>console.anthropic.com</b> e crie a conta (ou faça login).</li>
+        <li>Em <b>Billing</b>, adicione crédito (normalmente a partir de US$ 5) e defina um <b>limite mensal</b> de gasto.</li>
+        <li>Em <b>API Keys</b>, toque em <b>Create Key</b>, copie a chave e cole acima.</li>
+        <li>Para a pesquisa na web, ative esse recurso nas configurações do Console. Se não estiver ativo, o app tenta sem ela automaticamente.</li></ol></details>
+    </details>
+    <details ${c.dg ? '' : ''}><summary>2. Discogs (gratuito)</summary>
+      <p class="hint">O Discogs tem muito mais trilhas de novela e discos brasileiros que o MusicBrainz. Com um token gratuito, a busca por nome e por código de barras passa a consultar os dois.</p>
+      <label class="lbl" for="set-dg">Token do Discogs</label><input id="set-dg" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" value="${esc(c.dg)}">
+      <details><summary>Como criar o token</summary><ol class="hint">
+        <li>Crie uma conta gratuita em <b>discogs.com</b>.</li>
+        <li>Vá em <b>Settings</b>, depois <b>Developers</b>, e toque em <b>Generate new token</b>.</li>
+        <li>Copie o token e cole acima.</li></ol></details>
+    </details>
+    <p class="hint">As chaves ficam só neste aparelho e <b>não entram na cópia de segurança</b>.</p>
+    <div class="acts"><button type="button" class="btn" data-d="ok">Salvar</button><button type="button" class="btn ghost" data-s="test">Testar a chave da IA</button><button type="button" class="btn ghost" data-d="no">Fechar</button></div></div>`;
+  d.hidden = false;
+  const close = () => { d.hidden = true; d.innerHTML = ''; d.onclick = null; };
+  d.onclick = async e => {
+    const b = e.target.closest('[data-d],[data-s]');
+    if (!b) { if (e.target === d) close(); return; }
+    if (b.dataset.d === 'no') return close();
+    if (b.dataset.d === 'ok') {
+      LS.set('gs-akey', $('#set-akey').value.trim()); LS.set('gs-model', $('#set-model').value); LS.set('gs-web', $('#set-web').checked ? '1' : '0'); LS.set('gs-discogs', $('#set-dg').value.trim());
+      close(); toast('Configurações guardadas');
+      const hh = $('#aihint'); if (hh && aiCfg().key) hh.remove();
+    }
+    if (b.dataset.s === 'test') {
+      const key = $('#set-akey').value.trim(); if (!key) return toast('Cole a chave da API primeiro.');
+      b.disabled = true; b.textContent = 'Testando…';
+      try { await callClaude({key, model: AI_MODELS.eco, content: [{type: 'text', text: 'Responda apenas: ok'}], web: false, maxTokens: 16}); toast('Chave funcionando!'); }
+      catch (err) { toast(aiErrMsg(err)); }
+      b.disabled = false; b.textContent = 'Testar a chave da IA';
+    }
+  };
+}
+
+// ---------- colar informações (Google, Discogs, Wikipédia, conversa com o Claude…) ----------
+function parsePasted(text, order = 'ta') {
+  const out = {artist: '', album: '', year: '', format: null, genres: [], label: '', notes: '', tracks: []};
+  const LBL = /^(artistas?|int[ée]rpretes?|[áa]lbum|t[ií]tulo|disco|ano|lan[çc]amento|formato|g[êe]neros?|estilos?|gravadora|selo|label|faixas?|m[úu]sicas?|tracklist|lista de faixas|notas?|observa[çc][õo]es)\s*[:：]\s*(.*)$/i;
+  const rawTracks = [], loose = []; let inTracks = false, labeled = false;
+  for (let l of String(text || '').replace(/\r/g, '').split('\n')) {
+    l = l.trim(); if (!l) continue;
+    const m = l.match(LBL);
+    if (m) {
+      labeled = true; const k = norm(m[1]), v = m[2].trim(); inTracks = false;
+      if (/^(artista|interprete)/.test(k)) out.artist = v;
+      else if (/^(album|titulo|disco)$/.test(k)) out.album = v;
+      else if (/^(ano|lancamento)$/.test(k)) { const y = v.match(/\b(19|20)\d{2}\b/); if (y) out.year = y[0]; }
+      else if (k === 'formato') out.format = /fita|cassete|cassette|k7/i.test(v) ? 'fita' : /vinil|vinyl|\blp\b/i.test(v) ? 'vinil' : /\bcd\b/i.test(v) ? 'cd' : null;
+      else if (/^(genero|generos|estilo|estilos)$/.test(k)) out.genres = v.split(/[,;/]/).map(x => x.trim()).filter(Boolean).slice(0, 5);
+      else if (/^(gravadora|selo|label)$/.test(k)) out.label = v;
+      else if (/^(nota|notas|observacoes)$/.test(k)) out.notes = v;
+      else { inTracks = true; if (v) rawTracks.push(v); }
+      continue;
+    }
+    if (inTracks) rawTracks.push(l);
+    else if (/^(?:[A-Da-d]\d{1,2}[.)\-–:\s]|\d{1,3}\s*[.)\-–:]\s*)\S/.test(l)) loose.push(l);
+    else if (!labeled) loose.push(l);
+  }
+  let lines = rawTracks.length ? rawTracks : loose;
+  if (!rawTracks.length && labeled) lines = lines.filter(l => /^(?:[A-Da-d]\d{1,2}[.)\-–:\s]|\d{1,3}\s*[.)\-–:]\s*)\S/.test(l));
+  lines.slice(0, 300).forEach((l, i) => {
+    l = l.replace(/\s*[\(\[]\d{1,2}:\d{2}[\)\]]/g, '').replace(/\s+\d{1,2}:\d{2}\s*$/, '').trim();
+    let pos = String(i + 1), rest = l;
+    const m = l.match(/^(?:([A-Da-d]\d{1,2})[.)\-–:\s]+|(\d{1,3})\s*[.)\-–:]\s*)(.+)$/);
+    if (m) { pos = (m[1] || m[2]).toUpperCase(); if (/^\d+$/.test(pos)) pos = String(+pos); rest = m[3].trim(); }
+    let t = rest, a = '';
+    const k1 = rest.search(/\s[—|]\s/), k2 = rest.search(/\s[-–]\s/);
+    if (k1 > 0) { t = rest.slice(0, k1).trim(); a = rest.slice(k1).replace(/^\s[—|]\s/, '').trim(); }
+    else if (k2 > 0) { const x = rest.slice(0, k2).trim(), y = rest.slice(k2).replace(/^\s[-–]\s/, '').trim(); if (order === 'ta') { t = x; a = y; } else { t = y; a = x; } }
+    if (!t) return;
+    const o = {pos, t: t.slice(0, 200)}; if (a) o.a = a.slice(0, 150); out.tracks.push(o);
+  });
+  return out;
+}
+function pasteDialog() {
+  return new Promise(res => {
+    const d = $('#dlg');
+    d.innerHTML = `<div class="box big" role="dialog" aria-modal="true" aria-label="Colar informações"><p><b>Colar informações do disco</b></p>
+      <p class="hint">Cole o texto do Google, do Discogs, da Wikipédia ou de uma conversa com o Claude. Pode ser só a lista de faixas. Linhas como “Artista:”, “Álbum:”, “Ano:” e “Faixas:” também são entendidas.</p>
+      <textarea id="pastein" rows="9" placeholder="Álbum: Terra Nostra&#10;Faixas:&#10;1. Música - Intérprete"></textarea>
+      <label class="lbl" for="pastefmt">Nas linhas “A - B”, o primeiro nome é…</label>
+      <select id="pastefmt" class="sel"><option value="ta">o título da música</option><option value="at">o artista</option></select>
+      <div class="acts"><button type="button" class="btn" data-d="ok">Preencher</button><button type="button" class="btn ghost" data-d="no">Cancelar</button></div></div>`;
+    d.hidden = false; $('#pastein').focus();
+    const fin = v => { d.hidden = true; d.innerHTML = ''; d.onclick = null; res(v); };
+    d.onclick = e => {
+      const b = e.target.closest('[data-d]');
+      if (b && b.dataset.d === 'ok') fin({text: $('#pastein').value, order: $('#pastefmt').value});
+      else if (b || e.target === d) fin(null);
+    };
+  });
+}
+
 async function detectBarcode(src) {
   if (!HAS_BD) return null;
   let det;
@@ -993,7 +1378,7 @@ async function startScan() {
   const ov = $('#scan'), v = $('#scanv');
   try { scanStream = await navigator.mediaDevices.getUserMedia({video: {facingMode: {ideal: 'environment'}, width: {ideal: 1280}}, audio: false}); }
   catch (e) { return toast('Libere a câmera para escanear o código de barras.'); }
-  v.srcObject = scanStream; ov.hidden = false; try { await v.play(); } catch (e) {}
+  v.srcObject = scanStream; ov.hidden = false; ovOpen(); try { await v.play(); } catch (e) {}
   let det;
   try { det = new BarcodeDetector({formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e']}); } catch (e) { det = new BarcodeDetector(); }
   let busy = false;
@@ -1006,10 +1391,126 @@ async function startScan() {
     busy = false;
   }, 300);
 }
-function stopScan() {
+function stopScan(fromPop = false) {
   clearInterval(scanTimer); scanTimer = null;
   if (scanStream) { scanStream.getTracks().forEach(t => t.stop()); scanStream = null; }
+  const was = !$('#scan').hidden;
   $('#scan').hidden = true; $('#scanv').srcObject = null;
+  if (was && !fromPop) ovClose();
+}
+
+// ---------- editor de recorte ----------
+const CR = {work: null, rect: null, ratio: null, scale: 1, dw: 0, dh: 0, drag: null, resolve: null, dpr: 1};
+const clamp = (v, a, b) => Math.min(Math.max(v, a), Math.max(a, b));
+async function loadBitmapFrom(src) {
+  try { return await createImageBitmap(src, {imageOrientation: 'from-image'}); }
+  catch (e) { return await new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = URL.createObjectURL(src); }); }
+}
+function makeWork(bmp, max = 2000) {
+  const w = bmp.width || bmp.naturalWidth, h = bmp.height || bmp.naturalHeight, k = Math.min(1, max / Math.max(w, h));
+  const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(w * k)); c.height = Math.max(1, Math.round(h * k));
+  c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height); return c;
+}
+function squareIn(r) { const s = Math.min(r.w, r.h); return {x: r.x + (r.w - s) / 2, y: r.y + (r.h - s) / 2, w: s, h: s}; }
+function cropDefaultRect() {
+  const W = CR.work.width, H = CR.work.height, m = .05;
+  const r = {x: W * m, y: H * m, w: W * (1 - 2 * m), h: H * (1 - 2 * m)};
+  CR.rect = CR.ratio ? squareIn(r) : r;
+}
+function syncCropChips() { document.querySelectorAll('[data-a=cmode]').forEach(b => b.setAttribute('aria-pressed', (b.dataset.v === 'quadrado') === (CR.ratio === 1))); }
+async function cropPhoto(src) {
+  let bmp;
+  try { bmp = await loadBitmapFrom(src); } catch (e) { toast('Não consegui abrir essa foto. Tente tirar outra.'); return null; }
+  CR.work = makeWork(bmp); if (bmp.close) bmp.close();
+  CR.ratio = null; CR.drag = null; syncCropChips(); cropDefaultRect();
+  $('#crop').hidden = false; ovOpen();
+  await new Promise(r => requestAnimationFrame(r));
+  layoutCrop(); drawCrop();
+  return new Promise(res => { CR.resolve = res; });
+}
+function cropFinish(blob) {
+  if ($('#crop').hidden) return;
+  $('#crop').hidden = true; ovClose();
+  const r = CR.resolve; CR.resolve = null; CR.work = null; if (r) r(blob || null);
+}
+function layoutCrop() {
+  if (!CR.work) return;
+  const st = $('#cropstage'), cv = $('#cropcv'), W = Math.max(50, st.clientWidth - 16), H = Math.max(50, st.clientHeight - 16);
+  const k = Math.min(W / CR.work.width, H / CR.work.height);
+  CR.scale = k; CR.dw = Math.round(CR.work.width * k); CR.dh = Math.round(CR.work.height * k); CR.dpr = window.devicePixelRatio || 1;
+  cv.style.width = CR.dw + 'px'; cv.style.height = CR.dh + 'px'; cv.width = Math.round(CR.dw * CR.dpr); cv.height = Math.round(CR.dh * CR.dpr);
+}
+function drawCrop() {
+  if (!CR.work) return;
+  const g = $('#cropcv').getContext('2d'), k = CR.scale, r = CR.rect;
+  g.setTransform(CR.dpr, 0, 0, CR.dpr, 0, 0); g.clearRect(0, 0, CR.dw, CR.dh);
+  g.drawImage(CR.work, 0, 0, CR.dw, CR.dh);
+  const x = r.x * k, y = r.y * k, w = r.w * k, h = r.h * k;
+  g.fillStyle = 'rgba(8,6,4,.62)';
+  g.fillRect(0, 0, CR.dw, y); g.fillRect(0, y + h, CR.dw, CR.dh - y - h); g.fillRect(0, y, x, h); g.fillRect(x + w, y, CR.dw - x - w, h);
+  g.strokeStyle = 'rgba(240,215,143,.35)'; g.lineWidth = 1; g.beginPath();
+  for (let i = 1; i < 3; i++) { g.moveTo(x + w * i / 3, y); g.lineTo(x + w * i / 3, y + h); g.moveTo(x, y + h * i / 3); g.lineTo(x + w, y + h * i / 3); }
+  g.stroke();
+  g.strokeStyle = '#d4af61'; g.lineWidth = 2; g.strokeRect(x, y, w, h);
+  g.fillStyle = '#d4af61';
+  for (const [cx, cy] of [[x, y], [x + w, y], [x, y + h], [x + w, y + h]]) g.fillRect(cx - 9, cy - 9, 18, 18);
+  if (!CR.ratio) for (const [cx, cy, hz] of [[x + w / 2, y, 1], [x + w / 2, y + h, 1], [x, y + h / 2, 0], [x + w, y + h / 2, 0]]) g.fillRect(cx - (hz ? 14 : 4), cy - (hz ? 4 : 14), hz ? 28 : 8, hz ? 8 : 28);
+}
+function cropHit(px, py) {
+  const r = CR.rect, t = 30 / CR.scale;
+  const nl = Math.abs(px - r.x) < t, nr = Math.abs(px - (r.x + r.w)) < t, nt = Math.abs(py - r.y) < t, nb = Math.abs(py - (r.y + r.h)) < t;
+  const inX = px > r.x - t && px < r.x + r.w + t, inY = py > r.y - t && py < r.y + r.h + t;
+  if (nl && nt) return 'nw'; if (nr && nt) return 'ne'; if (nl && nb) return 'sw'; if (nr && nb) return 'se';
+  if (!CR.ratio) { if (nt && inX) return 'n'; if (nb && inX) return 's'; if (nl && inY) return 'w'; if (nr && inY) return 'e'; }
+  if (px > r.x && px < r.x + r.w && py > r.y && py < r.y + r.h) return 'move';
+  return null;
+}
+function cropDragTo(p) {
+  const {h, p: p0, r0} = CR.drag, W = CR.work.width, H = CR.work.height, MIN = 48, dx = p.x - p0.x, dy = p.y - p0.y;
+  if (h === 'move') { CR.rect = {...r0, x: clamp(r0.x + dx, 0, W - r0.w), y: clamp(r0.y + dy, 0, H - r0.h)}; return; }
+  let x1 = r0.x, y1 = r0.y, x2 = r0.x + r0.w, y2 = r0.y + r0.h;
+  if (h.length === 2) {
+    const west = h.includes('w'), north = h.includes('n');
+    const ax = west ? x2 : x1, ay = north ? y2 : y1;
+    const px = clamp((west ? x1 : x2) + dx, 0, W), py = clamp((north ? y1 : y2) + dy, 0, H);
+    const sx = west ? -1 : 1, sy = north ? -1 : 1, maxW = sx > 0 ? W - ax : ax, maxH = sy > 0 ? H - ay : ay;
+    let w = Math.max(MIN, Math.abs(px - ax)), hh = Math.max(MIN, Math.abs(py - ay));
+    if (CR.ratio) { let s = Math.min(Math.max(w, hh), maxW, maxH); s = Math.max(s, MIN); w = hh = s; }
+    else { w = Math.min(w, maxW); hh = Math.min(hh, maxH); }
+    CR.rect = {x: sx > 0 ? ax : ax - w, y: sy > 0 ? ay : ay - hh, w, h: hh}; return;
+  }
+  if (h === 'n') y1 = clamp(r0.y + dy, 0, y2 - MIN);
+  if (h === 's') y2 = clamp(r0.y + r0.h + dy, y1 + MIN, H);
+  if (h === 'w') x1 = clamp(r0.x + dx, 0, x2 - MIN);
+  if (h === 'e') x2 = clamp(r0.x + r0.w + dx, x1 + MIN, W);
+  CR.rect = {x: x1, y: y1, w: x2 - x1, h: y2 - y1};
+}
+function cropMode(m) {
+  CR.ratio = m === 'quadrado' ? 1 : null;
+  if (CR.ratio) CR.rect = squareIn(CR.rect);
+  syncCropChips(); drawCrop();
+}
+function cropRotate() {
+  const w = CR.work, c = document.createElement('canvas'); c.width = w.height; c.height = w.width;
+  const g = c.getContext('2d'); g.translate(c.width, 0); g.rotate(Math.PI / 2); g.drawImage(w, 0, 0);
+  CR.work = c; cropDefaultRect(); layoutCrop(); drawCrop();
+}
+function cropOutput() {
+  const r = CR.rect, k = Math.min(1, 1400 / Math.max(r.w, r.h)), c = document.createElement('canvas');
+  c.width = Math.max(1, Math.round(r.w * k)); c.height = Math.max(1, Math.round(r.h * k));
+  c.getContext('2d').drawImage(CR.work, r.x, r.y, r.w, r.h, 0, 0, c.width, c.height);
+  return new Promise(res => c.toBlob(b => res(b), 'image/jpeg', .88));
+}
+(() => {
+  const cv = $('#cropcv'), pt = e => { const b = cv.getBoundingClientRect(); return {x: (e.clientX - b.left) / CR.scale, y: (e.clientY - b.top) / CR.scale}; };
+  cv.addEventListener('pointerdown', e => { if (!CR.work) return; const p = pt(e), h = cropHit(p.x, p.y); if (!h) return; e.preventDefault(); CR.drag = {h, p, r0: {...CR.rect}}; try { cv.setPointerCapture(e.pointerId); } catch (x) {} });
+  cv.addEventListener('pointermove', e => { if (!CR.drag || !CR.work) return; e.preventDefault(); cropDragTo(pt(e)); drawCrop(); });
+  const end = () => { CR.drag = null; };
+  cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
+  window.addEventListener('resize', () => { if (CR.work && !$('#crop').hidden) { layoutCrop(); drawCrop(); } });
+})();
+async function detectFromFile(f) {
+  try { const bmp = await createImageBitmap(f); const c = await detectBarcode(bmp); if (bmp.close) bmp.close(); return c; } catch (e) { return null; }
 }
 
 // ---------- exemplos ----------
@@ -1020,7 +1521,7 @@ function exampleItems() {
     {format:'vinil', artist:'The Beatles', album:'Abbey Road', year:1969, genres:['Rock','Pop'], condition:'VG', value:220, location:'Caixa A', notes:'', tracks:t("A1 Come Together\nA2 Something\nA3 Maxwell's Silver Hammer\nA4 Oh! Darling\nA5 Octopus's Garden\nA6 I Want You (She's So Heavy)\nB1 Here Comes the Sun\nB2 Because\nB3 You Never Give Me Your Money\nB4 Sun King\nB5 Mean Mr. Mustard\nB6 Polythene Pam\nB7 She Came in Through the Bathroom Window\nB8 Golden Slumbers\nB9 Carry That Weight\nB10 The End\nB11 Her Majesty")},
     {format:'fita', artist:'Michael Jackson', album:'Thriller', year:1982, genres:['Pop','Funk','Soul'], condition:'NM', value:60, location:'Estante 2', notes:'', tracks:t("1. Wanna Be Startin' Somethin'\n2. Baby Be Mine\n3. The Girl Is Mine\n4. Thriller\n5. Beat It\n6. Billie Jean\n7. Human Nature\n8. P.Y.T. (Pretty Young Thing)\n9. The Lady in My Life")},
     {format:'cd', artist:'Nirvana', album:'Nevermind', year:1991, genres:['Rock'], condition:'VG+', value:45, location:'Estante 1', notes:'', tracks:t("1. Smells Like Teen Spirit\n2. In Bloom\n3. Come as You Are\n4. Breed\n5. Lithium\n6. Polly\n7. Territorial Pissings\n8. Drain You\n9. Lounge Act\n10. Stay Away\n11. On a Plain\n12. Something in the Way")}
-  ].map((x, i) => ({...x, id: 'ex-' + i, createdAt: now - i, updatedAt: now, photo: null, example: true}));
+  ].map((x, i) => ({...x, id: 'ex-' + i, createdAt: now - i, updatedAt: now, photo: null, photos: [], example: true}));
 }
 async function loadExamples() {
   for (const it of exampleItems()) { await DB.put('items', it); if (!state.items.some(x => x.id === it.id)) state.items.push(it); }
@@ -1076,16 +1577,40 @@ const A = {
   },
   addg: () => { const inp = $('#g-new'); addGenre(inp.value); inp.value = ''; },
   mbsearch: () => {
-    const ar = lq($('#f-artist').value), al = lq($('#f-album').value);
-    if (!ar && !al) return toast('Digite o artista e/ou o álbum e toque em “Buscar pelo nome”.');
-    const parts = []; if (al) parts.push(lqField('release', al)); if (ar) parts.push(lqField('artist', ar));
-    mbSearch(parts.join(' AND '));
+    let q = ($('#f-q').value || '').trim();
+    if (!q) q = [$('#f-artist').value, $('#f-album').value].map(v => (v || '').trim()).filter(Boolean).join(' ');
+    if (!q) return toast('Digite o nome do disco, do artista ou da novela e toque em Buscar.');
+    searchAll('text', q);
   },
   bcsearch: () => bcSearch($('#f-bc').value),
+  aiid: () => aiIdentify(),
+  aipro: () => aiIdentify('pro'),
+  aiuse: () => { if (aiResult) { const r = aiResult; applyMeta(r, {toast: r.source === 'impressa' ? 'Preenchi com o que está impresso no disco. Confira os campos.' : 'Preenchi com a leitura da IA. Confira os campos com atenção.'}); mbMsg('<p class="note">Dados aplicados. Confira os campos abaixo e guarde o achado.</p>'); } },
+  aino: () => { aiResult = null; mbMsg(''); },
+  aiset: () => openAISettings(),
+  paste: async () => {
+    const r = await pasteDialog(); if (!r || !r.text.trim()) return;
+    const m = parsePasted(r.text, r.order);
+    if (!m.tracks.length && !m.artist && !m.album) return toast('Não consegui reconhecer informações nesse texto. Tente colar a lista de faixas, uma por linha.');
+    await applyMeta(m, {toast: `Preenchi com o texto colado${m.tracks.length ? ` (${m.tracks.length} faixas)` : ''}. Confira os campos.`});
+  },
   bcscan: () => startScan(),
   scanclose: () => stopScan(),
-  mbpick: el => mbPick(+el.dataset.i),
-  rmphoto: () => { draft.photo = null; $('#photoArea').innerHTML = photoAreaHTML(); },
+  mbpick: el => pickResult(+el.dataset.i),
+  padd: () => { draft.slots = Math.min(4, Math.max(2, draft.slots || 2) + 1); $('#photoArea').innerHTML = photoAreaHTML(); },
+  prm: el => { draft.photos[+el.dataset.slot] = null; $('#photoArea').innerHTML = photoAreaHTML(); },
+  pcrop: async el => { const i = +el.dataset.slot, nb = await cropPhoto(draft.photos[i]); if (nb && draft) { draft.photos[i] = nb; $('#photoArea').innerHTML = photoAreaHTML(); } },
+  gal: el => {
+    const it = state.items.find(x => x.id === el.dataset.id); if (!it) return;
+    const u = photoURL(it, +el.dataset.i); if (!u) return;
+    $('#heroimg').innerHTML = `<div class="cover">${imgTag(u, 'Foto: ' + PHOTO_LABELS[+el.dataset.i])}</div>`;
+    document.querySelectorAll('.thumb').forEach(b => b.setAttribute('aria-pressed', b === el));
+  },
+  crot: () => { cropRotate(); },
+  cmode: el => { cropMode(el.dataset.v); },
+  cfull: () => { CR.rect = {x: 0, y: 0, w: CR.work.width, h: CR.work.height}; if (CR.ratio) cropMode('livre'); drawCrop(); },
+  cok: async () => { const b = await cropOutput(); cropFinish(b); },
+  ccancel: () => cropFinish(null),
   // setlist
   slgenre: el => { const g = el.dataset.v, a = state.sl.genres, k = a.indexOf(g); if (k >= 0) a.splice(k, 1); else a.push(g); el.setAttribute('aria-pressed', k < 0); },
   slformat: el => { state.sl.format = el.dataset.v; render(); },
@@ -1130,25 +1655,21 @@ document.addEventListener('change', async e => {
   if (t.id === 'slper') state.sl.perAlbum = +t.value;
   if (t.id === 'importFile' && t.files[0]) { await importBackup(t.files[0]); t.value = ''; }
   if (t.dataset.in === 'photo' && t.files[0]) {
-    const area = $('#photoArea'); const f = t.files[0]; t.value = '';
-    area.style.opacity = .5;
-    try { const blob = await resizeImage(f); if (!draft) return; draft.photo = blob; area.innerHTML = photoAreaHTML(); }
-    catch (err) { toast('Não consegui abrir essa foto. Tente tirar outra.'); }
-    area.style.opacity = 1;
-    if (HAS_BD) {   // procura um código de barras na própria foto
-      try {
-        const bmp = await createImageBitmap(f), code = await detectBarcode(bmp); if (bmp.close) bmp.close();
-        const bc = $('#f-bc');
-        if (code && bc) { bc.value = code; toast('Achei um código de barras na foto. Procurando seu disco…'); bcSearch(code); }
-      } catch (err) {}
-    }
+    const slot = +t.dataset.slot || 0, f = t.files[0]; t.value = '';
+    const codeP = HAS_BD ? detectFromFile(f) : Promise.resolve(null);   // lê o código de barras na foto original, em alta resolução
+    const blob = await cropPhoto(f);
+    if (!draft) return;
+    if (blob) { draft.photos[slot] = blob; if (slot + 1 > (draft.slots || 2)) draft.slots = slot + 1; $('#photoArea').innerHTML = photoAreaHTML(); }
+    const code = await codeP, bc = $('#f-bc');
+    if (code && bc) { bc.value = code; toast('Achei um código de barras na foto. Procurando seu disco…'); bcSearch(code); }
   }
 });
 document.addEventListener('submit', e => { if (e.target.id === 'f') { e.preventDefault(); saveForm(e.target); } });
 document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && e.target.id === 'g-new') { e.preventDefault(); A.addg(); }
   if (e.key === 'Enter' && e.target.id === 'f-bc') { e.preventDefault(); A.bcsearch(); }
-  if (e.key === 'Escape') { if (!$('#scan').hidden) stopScan(); else if (!$('#dlg').hidden) $('#dlg').click(); else if (sheetOpen) closeSheet(); }
+  if (e.key === 'Enter' && e.target.id === 'f-q') { e.preventDefault(); A.mbsearch(); }
+  if (e.key === 'Escape') { if (!$('#crop').hidden) cropFinish(null); else if (!$('#scan').hidden) stopScan(); else if (!$('#dlg').hidden) $('#dlg').click(); else if (sheetOpen) closeSheet(); }
   if (e.key === 'Enter' && e.target.id === 'dlgin') { e.preventDefault(); $('[data-d=ok]').click(); }
 });
 window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredInstall = e; });
@@ -1166,7 +1687,7 @@ async function boot() {
   const ok = await DB.open();
   if (ok) {
     try {
-      state.items = (await DB.all('items')).map(i => ({genres: [], tracks: [], ...i}));
+      state.items = (await DB.all('items')).map(normItem);
       state.setlists = await DB.all('setlists');
       if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
     } catch (e) {}
