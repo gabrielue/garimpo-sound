@@ -85,3 +85,11 @@ NOVIDADES DA VERSÃO 8
 - Setlist por disco: poucos discos, sequências na ordem do disco, sem virar de lado quando possível, vinis/CDs/fitas em
   blocos, com a contagem de trocas de disco e viradas de lado.
 - Seus itens antigos continuam funcionando; faça o backup antes de atualizar.
+
+NOVIDADES DA VERSÃO 9
+- Valor automático do item (em reais): pelo Discogs (preço sugerido para o estado de conservação, se a conta tiver
+  configurações de vendedor em reais; senão, o menor preço anunciado hoje) e, quando o Discogs não cobre, estimativa da IA
+  com pesquisa na web. É uma referência de mercado, não uma avaliação.
+- Onde: formulário (Sugerir valor), detalhe do achado (Buscar/Atualizar valor) e Mais > "Preencher valores pelo Discogs"
+  (lote, para os achados sem valor). Valor digitado por você nunca é sobrescrito sozinho.
+- O app mostra a origem do valor, a data e avisa quando a edição do disco é aproximada.

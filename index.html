@@ -772,7 +772,7 @@ function openDetail(id, hlIdx) {
     <div class="shbody" style="--fc:${f.color}">
       <div class="hero"><div class="frame" id="heroimg">${cover(it)}</div>${thumbs}
         <div class="ttl"><h1>${esc(it.album)}</h1><span class="by">${esc(it.artist)}</span>
-          ${it.value != null ? `<div style="margin-top:8px"><span class="tag">${brl(it.value)}</span></div>` : ''}</div></div>
+          ${it.value != null ? `<div style="margin-top:8px"><span class="tag">${brl(it.value)}</span></div>` : ''}${it.valueInfo ? `<p class="note" style="max-width:34ch;margin:6px auto 0">${esc(valueNote(it.valueInfo))}</p>` : ''}</div></div>
       <div class="facts">
         <div><small>Formato</small><b>${f.name}</b></div>
         <div><small>Ano</small><b>${it.year || '—'}</b></div>
@@ -783,6 +783,7 @@ function openDetail(id, hlIdx) {
       ${it.tracks.length ? `<h2 style="font-family:var(--disp);font-weight:400;font-size:18px;color:var(--gold);margin:22px 0 4px">Faixas (${it.tracks.length})</h2><ul class="tracks">${trk}</ul>` : `<p class="note" style="margin-top:20px">Ainda sem faixas registradas. Toque em Editar para completar o repertório deste achado.</p>`}
       ${it.notes ? `<h2 style="font-family:var(--disp);font-weight:400;font-size:18px;color:var(--gold);margin:22px 0 6px">Anotações do garimpo</h2><p style="white-space:pre-wrap">${esc(it.notes)}</p>` : ''}
       <div class="acts"><button class="btn" data-a="edit" data-id="${esc(it.id)}">${ic('editar', 18)}Editar</button>
+        ${LS.get('gs-discogs') || aiCfg().key ? `<button class="btn ghost" data-a="valitem" data-id="${esc(it.id)}">${it.value != null ? 'Atualizar valor' : 'Buscar valor'}</button>` : ''}
         <button class="btn danger" data-a="delete" data-id="${esc(it.id)}">${ic('lixo', 18)}Remover</button></div>
     </div>`);
   if (hlIdx != null) setTimeout(() => { const r = $('#hlrow'); if (r) r.scrollIntoView({block: 'center'}); }, 60);
@@ -814,7 +815,7 @@ function photoAreaHTML() {
   return h + `<p class="hint" style="margin-top:8px">Fotografe a frente e o verso: o verso ajuda a identificar o disco e traz o código de barras. Depois da foto, você ajusta o recorte. As fotos ficam só neste aparelho.</p>`;
 }
 function openForm(it) {
-  draft = it ? {...it, genres: [...it.genres], photos: [...(it.photos || [])], slots: Math.max(2, (it.photos || []).length), formatTouched: true, tg: Object.fromEntries((it.tracks || []).filter(t => t.g).map(t => [norm(t.t), t.g]))} : {format: 'vinil', genres: [], photos: [], tracks: [], slots: 2, formatTouched: false, tg: {}};
+  draft = it ? {...it, genres: [...it.genres], photos: [...(it.photos || [])], slots: Math.max(2, (it.photos || []).length), formatTouched: true, autoValue: it.valueInfo ? it.value : null, tg: Object.fromEntries((it.tracks || []).filter(t => t.g).map(t => [norm(t.t), t.g]))} : {format: 'vinil', genres: [], photos: [], tracks: [], slots: 2, formatTouched: false, tg: {}};
   const d = draft;
   openSheet(`
     <div class="shtop"><button class="icon" data-a="close" aria-label="Fechar">${ic('fechar')}</button><h2>${d.id ? 'Editar achado' : 'Registrar achado'}</h2><span></span></div>
@@ -845,6 +846,7 @@ function openForm(it) {
         <div class="fld"><label for="f-year">Ano</label><input id="f-year" name="year" type="number" inputmode="numeric" min="1900" max="2100" value="${d.year || ''}"></div>
         <div class="fld"><label for="f-value">Valor estimado (R$)</label><input id="f-value" name="value" inputmode="decimal" value="${d.value != null ? String(d.value).replace('.', ',') : ''}"></div>
       </div>
+      <div class="fld"><button type="button" class="btn ghost" data-a="valsug">Sugerir valor (Discogs ou IA)</button><span class="hint" id="valnote">${esc(valueNote(d.valueInfo))}</span></div>
       <div class="fld"><span class="lbl">Gêneros</span><div class="chips" id="gbox">${genreChipsHTML(d.genres)}</div>
         <div class="addg"><input id="g-new" placeholder="Outro gênero" aria-label="Adicionar outro gênero"><button type="button" class="btn ghost" data-a="addg">Adicionar</button></div></div>
       <div>
@@ -864,12 +866,13 @@ async function saveForm(form) {
   if (!artist || !album) { toast('Faltou o artista ou o álbum. Eles ajudam a achar o disco depois.'); (artist ? $('#f-album') : $('#f-artist')).focus(); return; }
   const v = String(fd.get('value') || '').replace(/\./g, '').replace(',', '.').trim();
   const photos = (d.photos || []).slice(0, 4); while (photos.length && !photos[photos.length - 1]) photos.pop();
+  const val = v !== '' && !isNaN(parseFloat(v)) ? parseFloat(v) : null;
   const it = {
     id: d.id || uid(), createdAt: d.createdAt || Date.now(), updatedAt: Date.now(),
     format: d.format, artist, album,
     year: parseInt(fd.get('year')) || null,
     genres: d.genres, condition: fd.get('condition') || '',
-    value: v !== '' && !isNaN(parseFloat(v)) ? parseFloat(v) : null,
+    value: val, dgId: d.dgId || null, valueInfo: d.valueInfo && val != null && d.autoValue != null && Math.abs(val - d.autoValue) < .005 ? d.valueInfo : null,
     location: (fd.get('location') || '').trim(), notes: (fd.get('notes') || '').trim(),
     tracks: parseTracks(fd.get('tracks')).map(t => { const g = d.tg && d.tg[norm(t.t)]; return g ? {...t, g} : t; }), photos, photo: photos.find(Boolean) || null, example: !!d.example
   };
@@ -895,6 +898,7 @@ function openMenu() {
       <div class="menu-list">
         ${deferredInstall && !standalone ? `<button class="btn" data-a="install">${ic('baixar', 18)}Instalar o app</button>` : ''}
         <button class="btn ghost" data-a="aiset">${ic('busca', 18)}Identificação automática</button>
+        ${state.items.some(i => i.value == null) && LS.get('gs-discogs') ? `<button class="btn ghost" data-a="fillvals">Preencher valores pelo Discogs (${state.items.filter(i => i.value == null).length} sem valor)</button>` : ''}
         ${state.items.some(i => !i.genres.length) ? `<button class="btn ghost" data-a="fillgen">Completar gêneros com IA (${state.items.filter(i => !i.genres.length).length} sem gênero)</button>` : ''}
         <button class="btn ghost" data-a="export">${ic('enviar', 18)}Exportar cópia de segurança</button>
         <button class="btn ghost" data-a="import">${ic('baixar', 18)}Importar cópia de segurança</button>
@@ -934,7 +938,8 @@ function cleanItem(r) {
     genres, condition: CONDS.some(c => c[0] === r.condition) ? r.condition : '',
     value: typeof r.value === 'number' && isFinite(r.value) && r.value >= 0 && r.value < 1e9 ? r.value : null,
     location: str(r.location, 100).trim(), notes: str(r.notes, 2000).trim(), tracks,
-    photos, photo: photos.find(Boolean) || null, example: r.example === true
+    photos, photo: photos.find(Boolean) || null, example: r.example === true,
+    dgId: /^\d{1,12}$/.test(String(r.dgId || '')) ? String(r.dgId) : null, valueInfo: cleanValueInfo(r.valueInfo)
   };
 }
 function cleanSetlist(l) {
@@ -1066,7 +1071,10 @@ async function mbFree(text) {
   return res;
 }
 // ---- Discogs (opcional, com token gratuito do próprio usuário) ----
-async function dg(path) {
+let dgChain = Promise.resolve(), dgLast = 0;
+function dg(path) { const run = dgChain.then(() => dgRaw(path)); dgChain = run.catch(() => {}); return run; }   // uma consulta por vez, com intervalo de ~1s
+async function dgRaw(path) {
+  const wait = Math.max(0, dgLast + 1000 - Date.now()); if (wait) await new Promise(r => setTimeout(r, wait)); dgLast = Date.now();
   const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 15000);
   try {
     const r = await fetch('https://api.discogs.com/' + path + (path.includes('?') ? '&' : '?') + 'token=' + encodeURIComponent(LS.get('gs-discogs') || ''), {signal: ctl.signal, credentials: 'omit', referrerPolicy: 'no-referrer'});
@@ -1098,7 +1106,7 @@ async function dgDetails(r) {
     if (ta && (various || norm(ta) !== norm(relArtist))) o.a = ta.slice(0, 150);
     return o;
   });
-  return {id: String(x.id || r.id), artist: relArtist, album: String(x.title || r.title), year: String(x.year || r.date || ''),
+  return {id: String(x.id || r.id), dgId: String(x.id || r.id), artist: relArtist, album: String(x.title || r.title), year: String(x.year || r.date || ''),
     format: dgFormat((x.formats || []).map(f => f.name)) || r.fmt, genres: mapGenres([...(x.genres || []), ...(x.styles || [])]),
     tracks, label: ((x.labels || [])[0] || {}).name || r.label || ''};
 }
@@ -1112,6 +1120,93 @@ async function mbDetails(r) {
   return {id: rel.id || r.id, artist: relArtist, album: rel.title || r.title, year: String(rel.date || r.date || '').slice(0, 4),
     format: mbFormat(rel.media) || r.fmt, genres: mapGenres(genres), tracks: mbTracks(rel.media, relArtist), label};
 }
+// ---------- valor do item: referência de mercado ----------
+let dgSugOff = false;
+const round2 = v => Math.round(v * 100) / 100;
+const fmtVal = v => String(round2(v)).replace('.', ',');
+const DG_COND = {'M': 'Mint (M)', 'NM': 'Near Mint (NM or M-)', 'VG+': 'Very Good Plus (VG+)', 'VG': 'Very Good (VG)', 'G': 'Good (G)', 'P': 'Poor (P)'};
+function valueNote(vi) {
+  if (!vi) return '';
+  const d = new Date(vi.at || Date.now()).toLocaleDateString('pt-BR');
+  const base = {'dg-sug': `Preço sugerido pelo Discogs para o estado ${vi.cond || 'VG+'}`, 'dg-min': `Menor preço anunciado no Discogs${vi.n ? ` (${vi.n} à venda)` : ''}`,
+    ia: `Estimativa da IA${vi.low && vi.high ? `: de ${brl(vi.low)} a ${brl(vi.high)}` : ''}${vi.n ? `, ${vi.n} ${vi.n === 1 ? 'anúncio' : 'anúncios'}` : ''}`}[vi.src] || 'Valor automático';
+  return `${base}, em ${d}.${vi.approx ? ' Edição aproximada: confira.' : ''} É uma referência de mercado, não uma avaliação.`;
+}
+function cleanValueInfo(o) {
+  if (!o || typeof o !== 'object' || !['dg-sug', 'dg-min', 'ia'].includes(o.src)) return null;
+  const num = v => { const x = Number(v); return isFinite(x) && x > 0 && x < 1e7 ? x : null; };
+  if (num(o.value) == null) return null;   // origem do valor sem valor não serve
+  return {src: o.src, value: num(o.value), low: num(o.low), high: num(o.high), n: Math.max(0, Math.min(1e6, parseInt(o.n) || 0)), cond: CONDS.some(c => c[0] === o.cond) ? o.cond : null,
+    conf: ['alta', 'media', 'baixa'].includes(o.conf) ? o.conf : null, basis: str(o.basis, 160), at: Number.isFinite(o.at) ? o.at : Date.now(), approx: o.approx === true, dg: /^\d{1,12}$/.test(String(o.dg || '')) ? String(o.dg) : null};
+}
+// quão parecido é um resultado do Discogs com o disco que temos: os nomes precisam bater (formato e ano só desempatam)
+function dgMatchScore(ctx, r) {
+  const want = new Set(toks(String(ctx.artist || '') + ' ' + String(ctx.album || ''))), got = new Set(toks((r.artist || '') + ' ' + (r.title || '')));
+  if (!want.size) return {ratio: 0, score: 0};
+  let hit = 0; want.forEach(t => { if (got.has(t)) hit++; });
+  const ratio = hit / want.size;
+  return {ratio, score: ratio + (ctx.format && r.fmt === ctx.format ? .1 : 0) + (ctx.year && r.date && String(ctx.year) === String(r.date) ? .05 : 0)};
+}
+// acha o disco no Discogs: pelo código de barras (exato) ou pelo nome (aproximado)
+async function dgResolve(ctx) {
+  const bc = String(ctx.barcode || '').replace(/\D/g, '');
+  if (/^\d{8,14}$/.test(bc)) { const l = await dgFind({barcode: bc}); if (l.length) return {id: l[0].id, approx: false}; }
+  if (!norm(String(ctx.artist || '') + String(ctx.album || ''))) return null;
+  const l = await dgFind({q: [ctx.artist, ctx.album].filter(Boolean).join(' ')});
+  let best = null, bs = 0; for (const r of l) { const m = dgMatchScore(ctx, r); if (m.ratio >= .65 && m.score > bs) { bs = m.score; best = r; } }
+  return best ? {id: best.id, approx: true} : null;
+}
+// devolve {src, value, ...} | {none: true} (sem anúncios) | null (disco não achado)
+async function dgValue(ctx, cond) {
+  let id = ctx.dgId, approx = false;
+  if (!id) { const r = await dgResolve(ctx); if (!r) return null; id = r.id; approx = r.approx; }
+  const st = await dg(`marketplace/stats/${encodeURIComponent(id)}?curr_abbr=BRL`), n = (st && st.num_for_sale) || 0, c = DG_COND[cond] ? cond : 'VG+';
+  let sug = null;
+  if (!dgSugOff) { try { sug = await dg(`marketplace/price_suggestions/${encodeURIComponent(id)}`); } catch (e) { if (e.message !== 'limite') dgSugOff = true; } }   // exige conta de vendedor configurada no Discogs
+  const sv = sug && sug[DG_COND[c]], base = {dg: String(id), approx, at: Date.now(), n};
+  if (sv && sv.currency === 'BRL' && sv.value > 0) return {...base, src: 'dg-sug', value: round2(sv.value), cond: c};
+  const lp = st && st.lowest_price;
+  if (lp && lp.value > 0 && (!lp.currency || lp.currency === 'BRL')) return {...base, src: 'dg-min', value: round2(lp.value)};
+  return {none: true, dg: String(id), approx, note: lp && lp.currency && lp.currency !== 'BRL' ? 'moeda' : 'sem-anuncio'};
+}
+const VALUE_SYSTEM = `Você ajuda um colecionador brasileiro a estimar o valor de mercado de um disco.
+Use a busca na web para achar anúncios e vendas recentes: priorize sites brasileiros (Mercado Livre, Estante Virtual, OLX, Discogs) e, se faltar, internacionais.
+Regras: 1. Considere a edição, o formato e o estado de conservação informados. 2. Nunca invente preços: use apenas valores que você encontrou. 3. Converta para reais (BRL) quando necessário e diga a base da estimativa em "basis". 4. Se não achar preços confiáveis, devolva null em "typical".
+Responda SOMENTE com um objeto JSON válido, sem markdown, neste formato:
+{"low":null,"typical":null,"high":null,"n":0,"basis":"","confidence":"alta|media|baixa"}
+"low", "typical" e "high" são números em reais; "n" é quantos anúncios ou vendas você encontrou.`;
+async function aiValue(ctx, cond) {
+  if (!aiCfg().key) return null;
+  const text = `Disco: “${ctx.album}” de ${ctx.artist}${ctx.year ? ' (' + ctx.year + ')' : ''}. Formato: ${FORMATS[ctx.format] ? FORMATS[ctx.format].name : 'não informado'}. Estado de conservação: ${cond || 'VG+'}. Mercado de referência: Brasil.`;
+  const j = await aiJson({system: VALUE_SYSTEM, items: [{t: text}], strong: true, web: true, maxTokens: 2048});
+  const num = v => { const x = Number(v); return isFinite(x) && x > 0 && x < 1e6 ? round2(x) : null; };
+  const typical = num(j.typical); if (!typical) return {none: true, note: 'ia-sem-preco'};
+  return {src: 'ia', value: typical, low: num(j.low), high: num(j.high), n: Math.max(0, parseInt(j.n) || 0), cond: CONDS.some(c => c[0] === cond) ? cond : 'VG+', conf: ['alta', 'media', 'baixa'].includes(j.confidence) ? j.confidence : 'media', basis: str(j.basis, 160), at: Date.now(), approx: false};
+}
+const valueWhy = e => e.message === 'dg-auth' ? 'O token do Discogs não foi aceito.' : e.message === 'limite' ? 'O Discogs pediu uma pausa.' : 'O Discogs não respondeu.';
+const valueNoneMsg = (info, dgOn) => info && info.none ? (info.note === 'moeda' ? 'O Discogs não tem preço em reais para esse disco.' : info.note === 'ia-sem-preco' ? 'A IA não achou preços confiáveis para esse disco.' : 'Ninguém está vendendo esse disco no Discogs agora, então não há referência de preço.') : (dgOn ? 'Não achei esse disco no Discogs.' : '');
+// no formulário: sugere o valor do item que está sendo registrado
+async function suggestValue(silent) {
+  if (!draft || !$('#f')) return;
+  const ctx = {dgId: draft.dgId, barcode: $('#f-bc') && $('#f-bc').value, artist: $('#f-artist').value.trim(), album: $('#f-album').value.trim(), year: $('#f-year').value, format: draft.format};
+  const cond = $('#f-cond').value || 'VG+', note = $('#valnote'), vinp = $('#f-value');
+  if (!ctx.artist && !ctx.album) { if (!silent) toast('Preencha o artista e o álbum para eu procurar o valor.'); return; }
+  if (silent && vinp.value.trim()) return;   // o automático nunca sobrescreve o que você digitou
+  const dgOn = !!LS.get('gs-discogs'), ai = aiCfg();
+  if (!dgOn && !ai.key) { if (!silent) toast('Ligue o Discogs (grátis) ou a IA em Mais → Identificação automática para sugerir o valor.'); return; }
+  if (note && !silent) note.textContent = 'Procurando o valor…';
+  let info = null, why = '';
+  if (dgOn) { try { info = await dgValue(ctx, cond); } catch (e) { why = valueWhy(e); } }
+  if ((!info || info.none) && !silent && ai.key) {
+    try { if (note) note.textContent = 'Pedindo uma estimativa à IA (pesquisa na web)…'; const r = await aiValue(ctx, cond); if (r && !r.none) info = r; else if (!info) info = r; } catch (e) { why = aiErrMsg(e); }
+  }
+  if (!draft || !$('#f')) return;
+  if (info && !info.none) {
+    vinp.value = fmtVal(info.value); draft.valueInfo = info; draft.autoValue = info.value; if (info.dg) draft.dgId = info.dg;
+    if (note) note.textContent = valueNote(info); if (!silent) toast('Valor sugerido: ' + brl(info.value));
+  } else if (!silent && note) note.textContent = `${valueNoneMsg(info, dgOn)}${why ? ' ' + why : ''} Você pode digitar o valor à mão.`.trim();
+}
+
 // ---- lista de resultados ----
 function mbRender(note = '') {
   if (!mbList.length) return mbMsg('<p class="note">Não encontrei esse disco na base. Tente só o nome do artista ou da novela, outra grafia ou o código de barras. Discos raros às vezes não estão lá: nesse caso, toque em “Perguntar à IA pelo nome”, use “Identificar pelas fotos” ou preencha à mão.</p>' + note);
@@ -1175,6 +1270,7 @@ async function applyMeta(m, opts = {}) {
   if (m.format) { draft.format = m.format; document.querySelectorAll('#seg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === m.format)); }
   (m.genres || []).map(canonGenre).forEach(addGenre);
   (m.tracks || []).forEach(t => { if (t.g) draft.tg[norm(t.t)] = canonGenre(t.g); });
+  if (m.dgId) draft.dgId = String(m.dgId);
   if ((m.tracks || []).length) {
     const ta = $('#f-tracks');
     if (!ta.value.trim() || await dialog({msg: 'Substituir as faixas digitadas pela lista encontrada?', ok: 'Substituir'})) ta.value = tracksToText(m.tracks);
@@ -1185,6 +1281,7 @@ async function applyMeta(m, opts = {}) {
   if (opts.coverId && !draft.photos[0]) { const b = await fetchCover(opts.coverId); if (b && draft) { draft.photos[0] = b; $('#photoArea').innerHTML = photoAreaHTML(); capa = true; } }
   toast(opts.toast || (capa ? 'Achei! Dados e capa preenchidos' : 'Achei! Dados preenchidos'));
   { const cf = aiCfg(); if (!draft.genres.length && cf.key && cf.agen) suggestGenresForForm(); }
+  if (LS.get('gs-discogs') && LS.get('gs-aval') !== '0') suggestValue(true);
 }
 async function pickResult(i) {
   const r = mbList[i]; if (!r) return;
@@ -1397,17 +1494,17 @@ async function aiByName(q, force) {
   } catch (e) { aiFail(e); }
 }
 // chamada de IA que devolve JSON (sem pesquisa na web): usada para recorte e para gêneros
-async function aiJson({system, items, strong = false, maxTokens = 4096}) {
+async function aiJson({system, items, strong = false, maxTokens = 4096, web = false}) {
   const c = aiCfg();
   if (!c.key) { const e = new Error('sem chave'); e.code = 'nokey'; throw e; }
   let raw;
   if (c.prov === 'gemini') {
     const kind = strong ? 'flash' : 'lite';
     const parts = items.map(x => x.t != null ? {text: x.t} : {inline_data: {mime_type: 'image/jpeg', data: x.img}});
-    raw = await callGeminiSmart({key: c.key, model: c.gid || LS.get('gs-ga-' + kind) || GM_MODELS[kind], system, parts, web: false, json: true, maxTokens}, kind);
+    raw = await callGeminiSmart({key: c.key, model: c.gid || LS.get('gs-ga-' + kind) || GM_MODELS[kind], system, parts, web, json: !web, maxTokens}, kind);
   } else {
     const content = items.map(x => x.t != null ? {type: 'text', text: x.t} : {type: 'image', source: {type: 'base64', media_type: 'image/jpeg', data: x.img}});
-    raw = await callClaude({key: c.key, model: AI_MODELS[strong ? c.model : 'eco'], system, content, web: false, maxTokens});
+    raw = await callClaude({key: c.key, model: AI_MODELS[strong ? c.model : 'eco'], system, content, web, maxTokens});
   }
   return parseAIJson(raw);
 }
@@ -1430,6 +1527,37 @@ async function suggestGenresForForm() {
     const gs = m.get('form'); if (!gs || !draft || !$('#f') || draft.genres.length) return;
     gs.forEach(addGenre); toast('Sugeri os gêneros: ' + gs.join(', ') + '. Confira.');
   } catch (e) { /* gêneros são opcionais: falha em silêncio */ }
+}
+// preenche, de uma vez, os valores em branco pelo Discogs (grátis)
+let valAbort = false;
+async function fillValues() {
+  if (!LS.get('gs-discogs')) { openAISettings(); return; }
+  const todo = state.items.filter(i => i.value == null);
+  if (!todo.length) return toast('Todos os achados já têm valor.');
+  const mins = Math.max(1, Math.round(todo.length * 3.3 / 60));
+  if (!(await dialog({msg: `Procurar no Discogs o valor de ${todo.length} ${todo.length === 1 ? 'achado' : 'achados'} sem valor? Leva cerca de ${mins} ${mins === 1 ? 'minuto' : 'minutos'}; mantenha o app aberto. Quando o disco é achado só pelo nome, o valor fica marcado como “edição aproximada”.`, ok: 'Começar'}))) return;
+  const d = $('#dlg'); valAbort = false;
+  d.innerHTML = `<div class="box" role="alertdialog" aria-live="polite"><p id="vprog">Começando…</p><div class="acts"><button type="button" class="btn ghost" data-v="stop">Parar</button></div></div>`; d.hidden = false;
+  d.onclick = e => { if (e.target.closest('[data-v=stop]')) valAbort = true; };
+  let ok = 0, none = 0, miss = 0, done = 0, err = '';
+  for (const it of todo) {
+    if (valAbort) break;
+    const pr = $('#vprog'); if (pr) pr.textContent = `Procurando ${done + 1} de ${todo.length}: ${it.album}`;
+    try {
+      const info = await dgValue({dgId: it.dgId, artist: it.artist, album: it.album, year: it.year, format: it.format}, it.condition);
+      if (!info) miss++;
+      else if (info.none) { none++; if (info.dg && !it.dgId) { it.dgId = info.dg; await DB.put('items', it); } }
+      else { it.value = info.value; it.valueInfo = info; it.dgId = info.dg; await DB.put('items', it); ok++; }
+    } catch (e) {
+      if (e.message === 'dg-auth') { err = 'O token do Discogs não foi aceito.'; break; }
+      if (e.message === 'limite') { err = 'O Discogs pediu uma pausa. Continue daqui a pouco: o que já foi preenchido fica guardado.'; break; }
+      miss++;
+    }
+    done++;
+  }
+  d.hidden = true; d.innerHTML = ''; d.onclick = null;
+  if (sheetOpen) closeSheet(); render();
+  toast(err || `${valAbort ? 'Interrompido. ' : ''}Valor preenchido em ${ok} de ${todo.length}${none ? `; sem anúncios: ${none}` : ''}${miss ? `; não achados: ${miss}` : ''}.`);
 }
 async function fillGenres() {
   const c = aiCfg(); if (!c.key) return openAISettings();
@@ -1504,6 +1632,8 @@ function openAISettings() {
     <details><summary>3. Discogs (gratuito)</summary>
       <p class="hint">O Discogs tem muito mais trilhas de novela e discos brasileiros que o MusicBrainz. Com um token gratuito, a busca por nome e por código de barras passa a consultar os dois.</p>
       <label class="lbl" for="set-dg">Token do Discogs</label><input id="set-dg" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" value="${esc(c.dg)}">
+      <label class="chk"><input type="checkbox" id="set-aval" ${LS.get('gs-aval') !== '0' ? 'checked' : ''}><span>Sugerir o valor do disco automaticamente quando ele for achado</span></label>
+      <p class="hint">O mesmo token traz o valor: o app mostra o preço sugerido pelo Discogs para o estado do seu disco (precisa que a sua conta do Discogs tenha as configurações de vendedor preenchidas, em reais) ou, senão, o menor preço anunciado hoje. É uma referência de mercado, não uma avaliação.</p>
       <details><summary>Como criar o token</summary><ol class="hint">
         <li>Crie uma conta gratuita em <b>discogs.com</b>.</li>
         <li>Vá em <b>Settings</b>, depois <b>Developers</b>, e toque em <b>Generate new token</b>.</li>
@@ -1520,7 +1650,7 @@ function openAISettings() {
     if (b.dataset.d === 'ok') {
       LS.set('gs-prov', $('#set-prov').value); LS.set('gs-web', $('#set-web').checked ? '1' : '0'); LS.set('gs-agen', $('#set-agen').checked ? '1' : '0'); LS.set('gs-acrop', $('#set-acrop').checked ? '1' : '0');
       LS.set('gs-gkey', $('#set-gkey').value.trim()); LS.set('gs-gmodel', $('#set-gmodel').value); LS.set('gs-gid', $('#set-gid').value.trim());
-      LS.set('gs-akey', $('#set-akey').value.trim()); LS.set('gs-model', $('#set-model').value); LS.set('gs-discogs', $('#set-dg').value.trim());
+      LS.set('gs-akey', $('#set-akey').value.trim()); LS.set('gs-model', $('#set-model').value); LS.set('gs-discogs', $('#set-dg').value.trim()); LS.set('gs-aval', $('#set-aval').checked ? '1' : '0');
       close(); toast('Configurações guardadas');
       const hh = $('#aihint'); if (hh && aiCfg().key) hh.remove();
     }
@@ -1905,6 +2035,24 @@ const A = {
   aiid: () => aiIdentify(),
   aipro: () => { const n = aiNextModel(aiResult); return aiLast && aiLast.kind === 'name' ? aiByName(aiLast.q, n) : aiIdentify(n); },
   fillgen: () => fillGenres(),
+  fillvals: () => fillValues(),
+  valsug: () => suggestValue(false),
+  valitem: async el => {
+    const it = state.items.find(i => i.id === el.dataset.id); if (!it) return;
+    const dgOn = !!LS.get('gs-discogs'), ai = aiCfg();
+    if (!dgOn && !ai.key) return toast('Ligue o Discogs (grátis) ou a IA em Mais → Identificação automática.');
+    toast('Procurando o valor…');
+    const ctx = {dgId: it.dgId, artist: it.artist, album: it.album, year: it.year, format: it.format};
+    let info = null, why = '';
+    if (dgOn) { try { info = await dgValue(ctx, it.condition); } catch (e) { why = valueWhy(e); } }
+    if ((!info || info.none) && ai.key && await dialog({msg: `${valueNoneMsg(info, dgOn) || 'O Discogs não está ligado.'} Pedir uma estimativa à IA, com pesquisa na web?`, ok: 'Pedir à IA'})) {
+      try { const r = await aiValue(ctx, it.condition); if (r && !r.none) info = r; else if (!info) info = r; } catch (e) { why = aiErrMsg(e); }
+    }
+    if (!info || info.none) return toast(`${valueNoneMsg(info, dgOn) || 'Não consegui um valor agora.'} ${why}`.trim());
+    if (it.value != null && !it.valueInfo && Math.abs(it.value - info.value) > .005 && !(await dialog({msg: `Sugestão: ${brl(info.value)}. ${valueNote(info)} Substituir o valor atual (${brl(it.value)})?`, ok: 'Substituir'}))) return;
+    it.value = info.value; it.valueInfo = info; if (info.dg) it.dgId = info.dg;
+    await DB.put('items', it); render(); openDetail(it.id); toast('Valor atualizado: ' + brl(info.value));
+  },
   aiq: () => {
     let q = ($('#f-q').value || '').trim();
     if (!q) q = [$('#f-artist').value, $('#f-album').value].map(v => (v || '').trim()).filter(Boolean).join(' ');
