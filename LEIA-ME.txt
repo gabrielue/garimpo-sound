@@ -66,7 +66,7 @@ NOVIDADES DESTA VERSÃO
 - Preencher automaticamente, de quatro jeitos:
   1) código de barras (digitado, escaneado ou lido direto da foto do verso);
   2) busca livre por nome de disco, artista ou novela (MusicBrainz e, se ligar, Discogs);
-  3) "Identificar pelas fotos" com IA (opcional, paga por uso, com a sua chave da Anthropic);
+  3) "Identificar pelas fotos" com IA (opcional): Gemini do Google (gratuito, chave em aistudio.google.com/apikey) ou Claude da Anthropic (pago por uso, chave em console.anthropic.com);
   4) "Colar informações": cole texto do Google/Discogs/Wikipédia e o app separa título e intérprete.
 - Cada faixa pode ter seu intérprete (trilhas de novela e coletâneas): "Título — Intérprete".
 - Configurações em Mais > Identificação automática. As chaves ficam só no aparelho e NÃO entram no backup.
